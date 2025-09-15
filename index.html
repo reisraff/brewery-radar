@@ -26,10 +26,19 @@
   .sub{color:var(--muted); margin-bottom:22px}
   .container{
     display:grid; gap:18px;
-    grid-template-columns: 320px 1fr;
+    grid-template-columns: 320px 1fr 320px;
+  }
+  @media (max-width: 1200px){
+    .container{grid-template-columns: 280px 1fr 280px; gap:12px}
   }
   @media (max-width: 980px){
-    .container{grid-template-columns: 1fr}
+    .container{
+      grid-template-columns: 1fr;
+      grid-template-rows: auto auto auto;
+    }
+    .left-panel { order: 1; }
+    .chart-panel { order: 3; }
+    .right-panel { order: 2; }
   }
   .panel{
     background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
@@ -84,65 +93,193 @@
   }
   .hint{color:var(--muted); font-size:12px; margin-top:10px}
   canvas{width:100% !important; height:auto !important; max-height:70vh}
+  .chart-container{position:relative; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif}
   .footnote{margin-top:10px; font-size:12px; color:#9fb0ff}
   .search{margin-bottom:10px}
+  .lang-selector{
+    position:absolute; top:24px; right:24px;
+    background:rgba(255,255,255,.04); border:1px solid #1f2647;
+    border-radius:8px; padding:4px;
+    display:flex; gap:2px;
+  }
+  .lang-btn{
+    background:transparent; border:none; color:var(--muted);
+    padding:6px 8px; border-radius:6px; cursor:pointer;
+    font-size:11px; font-weight:600; text-transform:uppercase;
+    transition:all .2s;
+  }
+  .lang-btn:hover{background:rgba(255,255,255,.08); color:var(--text)}
+  .lang-btn.active{background:var(--brand-left); color:#fff}
+  .flag{
+    width:16px; height:12px; border-radius:2px; display:inline-block;
+    margin-left:6px; vertical-align:middle; border:1px solid rgba(255,255,255,.15);
+    background-size:cover; background-position:center;
+  }
 </style>
 </head>
 <body>
-  <h1>Radar de Lúpulos – Visualização & Comparação</h1>
-  <div class="sub">Selecione um lúpulo para o <b>lado esquerdo</b> (azul) e, opcionalmente, outro para o <b>lado direito</b> (magenta). Passe o mouse no gráfico para ver os valores.</div>
+  <div class="lang-selector">
+    <button class="lang-btn active" data-lang="pt">PT</button>
+    <button class="lang-btn" data-lang="en">EN</button>
+    <button class="lang-btn" data-lang="es">ES</button>
+  </div>
+  
+  <h1 data-i18n="title">Radar de Lúpulos – Visualização & Comparação</h1>
+  <div class="sub" data-i18n="subtitle">Selecione um lúpulo para o <b>lado esquerdo</b> (azul) e, opcionalmente, outro para o <b>lado direito</b> (magenta). Passe o mouse no gráfico para ver os valores.</div>
+  <div class="sub" style="color: #f59e0b; margin-top: 8px;" data-i18n="warning">⚠️ Se algum lúpulo não estiver incluído na lista, envie um email para: reisraff@gmail.com</div>
 
   <div class="container">
-    <!-- Painel de controles -->
-    <div class="panel">
-      <h2>Controles</h2>
+    <!-- Painel esquerdo -->
+    <div class="panel left-panel">
+      <h2 data-i18n="left_label">Lado Esquerdo (Azul)</h2>
 
       <div class="search">
-        <label for="q">Filtro rápido (por nome, país ou estilo)</label>
-        <input id="q" type="text" placeholder="Ex.: IPA, Alemanha, Citra..." />
+        <label for="q" data-i18n="filter_label">Filtro rápido (por nome, país ou estilo)</label>
+        <input id="q" type="text" data-i18n-placeholder="filter_placeholder" placeholder="Ex.: IPA, Alemanha, Citra..." />
       </div>
 
-      <div class="grid-2">
-        <div>
-          <label for="leftSel">Lado Esquerdo (Azul)</label>
-          <select id="leftSel"></select>
-        </div>
-        <div>
-          <label for="rightSel">Lado Direito (Magenta)</label>
-          <select id="rightSel"></select>
-        </div>
+      <div>
+        <label for="leftSel" data-i18n="left_selector_label">Selecionar Lúpulo</label>
+        <select id="leftSel"></select>
       </div>
 
       <div class="meta">
         <div class="item">
-          <span class="pill left-pill">ESQUERDA</span>
+          <span class="pill left-pill" data-i18n="left_pill">ESQUERDA</span>
           <div id="leftMeta"></div>
         </div>
+      </div>
+
+      <div class="hint" data-i18n="hint">Dica: use o filtro para reduzir a lista por país (ex.: <i>US</i>, <i>DE</i>, <i>GB</i>) ou por um estilo (ex.: <i>NEIPA</i>, <i>Kölsch</i>).</div>
+    </div>
+
+    <!-- Painel do gráfico -->
+    <div class="panel chart-panel">
+      <div class="header">
+        <h2 style="margin:0" data-i18n="chart_title">Gráfico em Teia</h2>
+        <div class="legend">
+          <span class="key"><span class="dot" style="background:var(--brand-left)"></span> <span data-i18n="legend_left">Esquerda</span></span>
+          <span class="key"><span class="dot" style="background:var(--brand-right)"></span> <span data-i18n="legend_right">Direita</span></span>
+          <span class="key" data-i18n="legend_scale">Escala 0–10</span>
+        </div>
+      </div>
+      <canvas id="radar"></canvas>
+      <div class="footnote" data-i18n="footnote">As pontas representam as características: Chá, Cítrico, Verde, Caramelado, Amadeirado, Picante, Mentolado, Herbal, Vegetal, Floral, Fruta Verde, Fruta Vermelha, Fruta Amarela, Fruta Doce.</div>
+    </div>
+
+    <!-- Painel direito -->
+    <div class="panel right-panel">
+      <h2 data-i18n="right_label">Lado Direito (Magenta)</h2>
+
+      <div class="search">
+        <label for="q2" data-i18n="filter_label">Filtro rápido (por nome, país ou estilo)</label>
+        <input id="q2" type="text" data-i18n-placeholder="filter_placeholder" placeholder="Ex.: IPA, Alemanha, Citra..." />
+      </div>
+
+      <div>
+        <label for="rightSel" data-i18n="right_selector_label">Selecionar Lúpulo</label>
+        <select id="rightSel"></select>
+      </div>
+
+      <div class="meta">
         <div class="item">
-          <span class="pill right-pill">DIREITA</span>
+          <span class="pill right-pill" data-i18n="right_pill">DIREITA</span>
           <div id="rightMeta"></div>
         </div>
       </div>
 
-      <div class="hint">Dica: use o filtro para reduzir a lista por país (ex.: <i>US</i>, <i>DE</i>, <i>GB</i>) ou por um estilo (ex.: <i>NEIPA</i>, <i>Kölsch</i>).</div>
-    </div>
-
-    <!-- Painel do gráfico -->
-    <div class="panel">
-      <div class="header">
-        <h2 style="margin:0">Gráfico em Teia</h2>
-        <div class="legend">
-          <span class="key"><span class="dot" style="background:var(--brand-left)"></span> Esquerda</span>
-          <span class="key"><span class="dot" style="background:var(--brand-right)"></span> Direita</span>
-          <span class="key">Escala 0–10</span>
-        </div>
-      </div>
-      <canvas id="radar"></canvas>
-      <div class="footnote">As pontas representam as características: Chá, Cítrico, Verde, Caramelado, Amadeirado, Picante, Mentolado, Herbal, Vegetal, Floral, Fruta Verde, Fruta Vermelha, Fruta Amarela, Fruta Doce.</div>
+      <div class="hint" data-i18n="hint_right">Opcional: selecione um segundo lúpulo para comparação.</div>
     </div>
   </div>
 
 <script>
+/* =====================  INTERNACIONALIZAÇÃO  ===================== */
+const TRANSLATIONS = {
+  pt: {
+    title: "Radar de Lúpulos – Visualização & Comparação",
+    subtitle: "Selecione um lúpulo para o <b>lado esquerdo</b> (azul) e, opcionalmente, outro para o <b>lado direito</b> (magenta). Passe o mouse no gráfico para ver os valores.",
+    warning: "⚠️ Se algum lúpulo não estiver incluído na lista, envie um email para: reisraff@gmail.com",
+    controls: "Controles",
+    filter_label: "Filtro rápido (por nome, país ou estilo)",
+    filter_placeholder: "Ex.: IPA, Alemanha, Citra...",
+    left_label: "Lado Esquerdo (Azul)",
+    right_label: "Lado Direito (Magenta)",
+    left_selector_label: "Selecionar Lúpulo",
+    right_selector_label: "Selecionar Lúpulo",
+    left_pill: "ESQUERDA",
+    right_pill: "DIREITA",
+    hint: "Dica: use o filtro para reduzir a lista por país (ex.: <i>US</i>, <i>DE</i>, <i>GB</i>) ou por um estilo (ex.: <i>NEIPA</i>, <i>Kölsch</i>).",
+    hint_right: "Opcional: selecione um segundo lúpulo para comparação.",
+    chart_title: "Gráfico em Teia",
+    legend_left: "Esquerda",
+    legend_right: "Direita",
+    legend_scale: "Escala 0–10",
+    footnote: "As pontas representam as características com seus ícones: ☕ Chá, 🍋 Cítrico, 🌿 Verde, 🍯 Caramelado, 🌳 Amadeirado, 🌶️ Picante, ❄️ Mentolado, 🌱 Herbal, 🥬 Vegetal, 🌸 Floral, 🍏 Fruta Verde, 🍓 Fruta Vermelha, 🍌 Fruta Amarela, 🍑 Fruta Doce.",
+    select_left: "— escolher —",
+    select_right: "— (opcional) —",
+    select_hop: "Selecione um lúpulo para popular os detalhes.",
+    hop_name: "Nome:",
+    hop_country: "País:",
+    hop_styles: "Estilos:"
+  },
+  en: {
+    title: "Hop Radar – Visualization & Comparison",
+    subtitle: "Select a hop for the <b>left side</b> (blue) and optionally another for the <b>right side</b> (magenta). Hover over the chart to see values.",
+    warning: "⚠️ If any hop is not included in the list, send an email to: reisraff@gmail.com",
+    controls: "Controls",
+    filter_label: "Quick filter (by name, country or style)",
+    filter_placeholder: "Ex.: IPA, Germany, Citra...",
+    left_label: "Left Side (Blue)",
+    right_label: "Right Side (Magenta)",
+    left_selector_label: "Select Hop",
+    right_selector_label: "Select Hop",
+    left_pill: "LEFT",
+    right_pill: "RIGHT",
+    hint: "Tip: use the filter to narrow the list by country (ex.: <i>US</i>, <i>DE</i>, <i>GB</i>) or by style (ex.: <i>NEIPA</i>, <i>Kölsch</i>).",
+    hint_right: "Optional: select a second hop for comparison.",
+    chart_title: "Radar Chart",
+    legend_left: "Left",
+    legend_right: "Right",
+    legend_scale: "Scale 0–10",
+    footnote: "The points represent characteristics with their icons: ☕ Tea, 🍋 Citrus, 🌿 Green, 🍯 Caramel, 🌳 Woody, 🌶️ Spicy, ❄️ Menthol, 🌱 Herbal, 🥬 Vegetal, 🌸 Floral, 🍏 Green Fruit, 🍓 Red Fruit, 🍌 Yellow Fruit, 🍑 Sweet Fruit.",
+    select_left: "— choose —",
+    select_right: "— (optional) —",
+    select_hop: "Select a hop to populate details.",
+    hop_name: "Name:",
+    hop_country: "Country:",
+    hop_styles: "Styles:"
+  },
+  es: {
+    title: "Radar de Lúpulos – Visualización y Comparación",
+    subtitle: "Selecciona un lúpulo para el <b>lado izquierdo</b> (azul) y opcionalmente otro para el <b>lado derecho</b> (magenta). Pasa el mouse sobre el gráfico para ver los valores.",
+    warning: "⚠️ Si algún lúpulo no está incluido en la lista, envía un email a: reisraff@gmail.com",
+    controls: "Controles",
+    filter_label: "Filtro rápido (por nombre, país o estilo)",
+    filter_placeholder: "Ej.: IPA, Alemania, Citra...",
+    left_label: "Lado Izquierdo (Azul)",
+    right_label: "Lado Derecho (Magenta)",
+    left_selector_label: "Seleccionar Lúpulo",
+    right_selector_label: "Seleccionar Lúpulo",
+    left_pill: "IZQUIERDA",
+    right_pill: "DERECHA",
+    hint: "Consejo: usa el filtro para reducir la lista por país (ej.: <i>US</i>, <i>DE</i>, <i>GB</i>) o por estilo (ej.: <i>NEIPA</i>, <i>Kölsch</i>).",
+    hint_right: "Opcional: selecciona un segundo lúpulo para comparación.",
+    chart_title: "Gráfico Radial",
+    legend_left: "Izquierda",
+    legend_right: "Derecha",
+    legend_scale: "Escala 0–10",
+    footnote: "Los puntos representan las características con sus íconos: ☕ Té, 🍋 Cítrico, 🌿 Verde, 🍯 Caramelo, 🌳 Amaderado, 🌶️ Picante, ❄️ Mentol, 🌱 Herbal, 🥬 Vegetal, 🌸 Floral, 🍏 Fruta Verde, 🍓 Fruta Roja, 🍌 Fruta Amarilla, 🍑 Fruta Dulce.",
+    select_left: "— elegir —",
+    select_right: "— (opcional) —",
+    select_hop: "Selecciona un lúpulo para mostrar detalles.",
+    hop_name: "Nombre:",
+    hop_country: "País:",
+    hop_styles: "Estilos:"
+  }
+};
+
+let currentLang = localStorage.getItem('hop-radar-lang') || 'pt';
+
 /* =====================  DADOS (CSV incorporado)  ===================== */
 const csv = `Lúpulo,País,Chá,Cítrico,Verde,Caramelado,Amadeirado,Picante,Mentolado,Herbal,Vegetal,Floral,Fruta Verde,Fruta Vermelha,Fruta Amarela,Fruta Doce,Estilos
 Cascade,US,3,8,4,2,2,3,1,4,3,7,5,2,6,3,"APA, IPA, Blonde, Amber"
@@ -210,7 +347,53 @@ Saaz,CZ,3,2,4,2,2,5,2,7,3,8,2,1,2,1,"Pilsner, Lager, Belgian Ale"
 Pacific Jade,NZ,2,7,4,2,3,6,2,6,3,5,4,3,7,4,"IPA, Pale Ale, Lager, Strong Ale"
 Wakatu,NZ,3,7,4,2,3,2,2,6,3,7,4,2,8,4,"Pale Ale, Lager, Blonde Ale, Golden Ale"`;
 /* =====================  Utilidades  ===================== */
+// Mapa de países para códigos ISO dos flags
+const COUNTRY_FLAGS = {
+  'US': 'us', 'EUA': 'us',
+  'DE': 'de',
+  'GB': 'gb',
+  'CZ': 'cz',
+  'NZ': 'nz',
+  'AU': 'au',
+  'FR': 'fr',
+  'ES': 'es',
+  'AR/CH': 'ar', // Argentina para o híbrido AR/CH
+  'AR': 'ar',
+  'CH': 'cl'
+};
+
+function getFlagUrl(countryCode) {
+  const isoCode = COUNTRY_FLAGS[countryCode] || countryCode.toLowerCase();
+  return `https://flagcdn.com/16x12/${isoCode}.png`;
+}
+
+function createFlagElement(countryCode) {
+  if (!countryCode) return '';
+  const flagUrl = getFlagUrl(countryCode);
+  return `<span class="flag" style="background-image:url('${flagUrl}')" title="${countryCode}"></span>`;
+}
 const ATTRS = ["Chá","Cítrico","Verde","Caramelado","Amadeirado","Picante","Mentolado","Herbal","Vegetal","Floral","Fruta Verde","Fruta Vermelha","Fruta Amarela","Fruta Doce"];
+
+// Mapeamento de ícones para cada característica
+const ATTR_ICONS = {
+  "Chá": "☕",
+  "Cítrico": "🍋", 
+  "Verde": "🌿",
+  "Caramelado": "🍯",
+  "Amadeirado": "🌳",
+  "Picante": "🌶️",
+  "Mentolado": "❄️",
+  "Herbal": "🌱",
+  "Vegetal": "🥬",
+  "Floral": "🌸",
+  "Fruta Verde": "🍏",
+  "Fruta Vermelha": "🍓",
+  "Fruta Amarela": "🍌",
+  "Fruta Doce": "🍑"
+};
+
+// Versões com ícones dos atributos
+const ATTRS_WITH_ICONS = ATTRS.map(attr => `${ATTR_ICONS[attr]} ${attr}`);
 function parseCSV(text){
   // parse simples, suficiente para este CSV (aspas apenas em Estilos)
   const lines = text.trim().split(/\r?\n/);
@@ -247,38 +430,66 @@ const byName = new Map(DATA.map(d=>[d.nome, d]));
 const leftSel  = document.getElementById('leftSel');
 const rightSel = document.getElementById('rightSel');
 const qInput   = document.getElementById('q');
+const q2Input  = document.getElementById('q2');
 const leftMeta = document.getElementById('leftMeta');
 const rightMeta= document.getElementById('rightMeta');
 
 function formatStyles(arr){ return arr.map(s=>`<span class="tag">${s}</span>`).join(" "); }
 function renderMeta(side, hop){
+  const t = TRANSLATIONS[currentLang];
   const html = hop ? `
-    <div><b>Nome:</b> ${hop.nome}</div>
-    <div><b>País:</b> ${hop.pais}</div>
-    <div><b>Estilos:</b><div class="styles">${formatStyles(hop.Estilos)}</div></div>
-  ` : `<div style="color:#7f89b4">Selecione um lúpulo para popular os detalhes.</div>`;
+    <div><b>${t.hop_name}</b> ${hop.nome}</div>
+    <div><b>${t.hop_country}</b> ${hop.pais}${createFlagElement(hop.pais)}</div>
+    <div><b>${t.hop_styles}</b><div class="styles">${formatStyles(hop.Estilos)}</div></div>
+  ` : `<div style="color:#7f89b4">${t.select_hop}</div>`;
   (side==='left'?leftMeta:rightMeta).innerHTML = html;
 }
 
-let optionsList = [...DATA];
+let leftOptionsList = [...DATA];
+let rightOptionsList = [...DATA];
 
 /* popula selects */
-function fillSelects(list){
+function fillLeftSelect(list){
+  const t = TRANSLATIONS[currentLang];
   const opts = list.map(d=>`<option value="${d.nome}">${d.nome} (${d.pais})</option>`).join("");
-  leftSel.innerHTML  = `<option value="">— escolher —</option>` + opts;
-  rightSel.innerHTML = `<option value="">— (opcional) —</option>` + opts;
+  leftSel.innerHTML  = `<option value="">${t.select_left}</option>` + opts;
 }
-/* filtro de busca */
-function applyFilter(){
+
+function fillRightSelect(list){
+  const t = TRANSLATIONS[currentLang];
+  const opts = list.map(d=>`<option value="${d.nome}">${d.nome} (${d.pais})</option>`).join("");
+  rightSel.innerHTML = `<option value="">${t.select_right}</option>` + opts;
+}
+
+function fillSelects(list){
+  fillLeftSelect(list);
+  fillRightSelect(list);
+}
+
+/* filtro de busca esquerdo */
+function applyLeftFilter(){
   const q = qInput.value.trim().toLowerCase();
-  if(!q){ optionsList = [...DATA]; fillSelects(optionsList); return; }
-  optionsList = DATA.filter(d=>{
+  if(!q){ leftOptionsList = [...DATA]; fillLeftSelect(leftOptionsList); return; }
+  leftOptionsList = DATA.filter(d=>{
     const hay = [d.nome, d.pais, ...(d.Estilos||[])].join(" ").toLowerCase();
     return hay.includes(q);
   });
-  fillSelects(optionsList);
+  fillLeftSelect(leftOptionsList);
 }
-qInput.addEventListener('input', applyFilter);
+
+/* filtro de busca direito */
+function applyRightFilter(){
+  const q = q2Input.value.trim().toLowerCase();
+  if(!q){ rightOptionsList = [...DATA]; fillRightSelect(rightOptionsList); return; }
+  rightOptionsList = DATA.filter(d=>{
+    const hay = [d.nome, d.pais, ...(d.Estilos||[])].join(" ").toLowerCase();
+    return hay.includes(q);
+  });
+  fillRightSelect(rightOptionsList);
+}
+
+qInput.addEventListener('input', applyLeftFilter);
+q2Input.addEventListener('input', applyRightFilter);
 
 /* =====================  CHART (Radar)  ===================== */
 const ctx = document.getElementById('radar').getContext('2d');
@@ -288,7 +499,7 @@ const gridColor = getComputedStyle(document.documentElement).getPropertyValue('-
 const radar = new Chart(ctx, {
   type: 'radar',
   data: {
-    labels: ATTRS,
+    labels: ATTRS_WITH_ICONS,
     datasets: [
       {
         label: 'Esquerda',
@@ -322,7 +533,7 @@ const radar = new Chart(ctx, {
         angleLines: { color: gridColor },
         pointLabels: {
           color: '#dfe6ff',
-          font: { size: 12, weight: 600 }
+          font: { size: 11, weight: 500, family: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple Color Emoji", "Segoe UI Emoji", sans-serif' }
         }
       }
     },
@@ -364,14 +575,61 @@ function update(){
   radar.update();
 }
 
+/* =====================  INTERNACIONALIZAÇÃO - FUNÇÕES  ===================== */
+function updateTexts() {
+  const t = TRANSLATIONS[currentLang];
+  
+  // Atualiza todos os elementos com data-i18n
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (t[key]) {
+      el.innerHTML = t[key];
+    }
+  });
+  
+  // Atualiza placeholders
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-i18n-placeholder');
+    if (t[key]) {
+      el.placeholder = t[key];
+    }
+  });
+  
+  // Atualiza labels do chart
+  radar.data.datasets[0].label = t.legend_left;
+  radar.data.datasets[1].label = t.legend_right;
+  radar.update();
+  
+  // Recarrega selects e metadados
+  fillSelects(leftOptionsList);
+  update();
+}
+
+function switchLanguage(lang) {
+  currentLang = lang;
+  localStorage.setItem('hop-radar-lang', lang);
+  
+  // Atualiza botões ativos
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === lang);
+  });
+  
+  updateTexts();
+}
+
 /* listeners */
 leftSel.addEventListener('change', update);
 rightSel.addEventListener('change', update);
 
+// Language switching
+document.querySelectorAll('.lang-btn').forEach(btn => {
+  btn.addEventListener('click', () => switchLanguage(btn.dataset.lang));
+});
+
 /* inicialização */
-fillSelects(DATA);
-renderMeta('left', null);
-renderMeta('right', null);
+// Configura idioma inicial
+switchLanguage(currentLang);
+
 /* pré-seleções simpáticas */
 const defaultLeft = byName.has('Cascade') ? 'Cascade' : DATA[0].nome;
 const defaultRight = byName.has('Citra') ? 'Citra' : (DATA[1]?.nome ?? '');
