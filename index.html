@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Hop Radar – View & Compare Hops</title>
+<!-- Chart.js via CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#0b1020;
+    --card:#131a33;
+    --muted:#a8b3cf;
+    --text:#e8ecf8;
+    --brand-left:#4c8df6;   /* azul (Esquerda) */
+    --brand-right:#e65bb7;  /* magenta (Direita) */
+    --ring:#2a335a;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; padding:24px;
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+    color:var(--text); background: radial-gradient(1200px 700px at 20% -10%, #1c2550 0%, var(--bg) 35%), var(--bg);
+  }
+  h1{font-size:clamp(20px,3vw,28px); margin:0 0 8px 0; letter-spacing:.2px}
+  .sub{color:var(--muted); margin-bottom:22px}
+  .container{
+    display:grid; gap:18px;
+    grid-template-columns: 320px 1fr;
+  }
+  @media (max-width: 980px){
+    .container{grid-template-columns: 1fr}
+  }
+  .panel{
+    background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+    border:1px solid #1f2647;
+    border-radius:16px;
+    padding:16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.05);
+  }
+  .panel h2{margin:2px 0 12px 0; font-size:16px; color:#ced7ff; font-weight:700}
+  .row{display:flex; gap:10px; margin-bottom:10px}
+  label{font-size:12px; color:var(--muted); display:block; margin-bottom:6px}
+  select, input[type="text"]{
+    width:100%;
+    background:#0f1530; color:var(--text);
+    border:1px solid #27305a; border-radius:10px;
+    padding:10px 12px; outline:none;
+    font-size:14px; transition:border .2s, box-shadow .2s;
+  }
+  select:focus, input[type="text"]:focus{
+    border-color:#5a6ee5; box-shadow:0 0 0 3px rgba(90,110,229,.25)
+  }
+  .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+  .pill{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:8px 10px; border-radius:999px; font-weight:600; font-size:12px; letter-spacing:.2px
+  }
+  .left-pill{background:rgba(76,141,246,.12); color:#cfe1ff; border:1px solid rgba(76,141,246,.35)}
+  .right-pill{background:rgba(230,91,183,.12); color:#ffd1ef; border:1px solid rgba(230,91,183,.35)}
+  .meta{
+    display:grid; gap:8px; margin-top:6px
+  }
+  .meta .item{
+    background:#0f1530; border:1px solid #27305a; border-radius:10px; padding:10px 12px;
+  }
+  .meta .item b{color:#cfd7ff; font-size:12px}
+  .styles{display:flex; flex-wrap:wrap; gap:6px; margin-top:6px}
+  .tag{
+    background:#0a112b; color:#d7def9; border:1px solid #243062;
+    font-size:12px; padding:6px 8px; border-radius:999px
+  }
+  .header{
+    display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px
+  }
+  .legend{
+    display:flex; gap:8px; align-items:center; flex-wrap:wrap
+  }
+  .legend .key{
+    display:inline-flex; align-items:center; gap:6px; font-size:12px; color:var(--muted)
+  }
+  .dot{
+    width:10px; height:10px; border-radius:50%
+  }
+  .hint{color:var(--muted); font-size:12px; margin-top:10px}
+  canvas{width:100% !important; height:auto !important; max-height:70vh}
+  .footnote{margin-top:10px; font-size:12px; color:#9fb0ff}
+  .search{margin-bottom:10px}
+</style>
+</head>
+<body>
+  <h1>Radar de Lúpulos – Visualização & Comparação</h1>
+  <div class="sub">Selecione um lúpulo para o <b>lado esquerdo</b> (azul) e, opcionalmente, outro para o <b>lado direito</b> (magenta). Passe o mouse no gráfico para ver os valores.</div>
+
+  <div class="container">
+    <!-- Painel de controles -->
+    <div class="panel">
+      <h2>Controles</h2>
+
+      <div class="search">
+        <label for="q">Filtro rápido (por nome, país ou estilo)</label>
+        <input id="q" type="text" placeholder="Ex.: IPA, Alemanha, Citra..." />
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <label for="leftSel">Lado Esquerdo (Azul)</label>
+          <select id="leftSel"></select>
+        </div>
+        <div>
+          <label for="rightSel">Lado Direito (Magenta)</label>
+          <select id="rightSel"></select>
+        </div>
+      </div>
+
+      <div class="meta">
+        <div class="item">
+          <span class="pill left-pill">ESQUERDA</span>
+          <div id="leftMeta"></div>
+        </div>
+        <div class="item">
+          <span class="pill right-pill">DIREITA</span>
+          <div id="rightMeta"></div>
+        </div>
+      </div>
+
+      <div class="hint">Dica: use o filtro para reduzir a lista por país (ex.: <i>US</i>, <i>DE</i>, <i>GB</i>) ou por um estilo (ex.: <i>NEIPA</i>, <i>Kölsch</i>).</div>
+    </div>
+
+    <!-- Painel do gráfico -->
+    <div class="panel">
+      <div class="header">
+        <h2 style="margin:0">Gráfico em Teia</h2>
+        <div class="legend">
+          <span class="key"><span class="dot" style="background:var(--brand-left)"></span> Esquerda</span>
+          <span class="key"><span class="dot" style="background:var(--brand-right)"></span> Direita</span>
+          <span class="key">Escala 0–10</span>
+        </div>
+      </div>
+      <canvas id="radar"></canvas>
+      <div class="footnote">As pontas representam as características: Chá, Cítrico, Verde, Caramelado, Amadeirado, Picante, Mentolado, Herbal, Vegetal, Floral, Fruta Verde, Fruta Vermelha, Fruta Amarela, Fruta Doce.</div>
+    </div>
+  </div>
+
+<script>
+/* =====================  DADOS (CSV incorporado)  ===================== */
+const csv = `Lúpulo,País,Chá,Cítrico,Verde,Caramelado,Amadeirado,Picante,Mentolado,Herbal,Vegetal,Floral,Fruta Verde,Fruta Vermelha,Fruta Amarela,Fruta Doce,Estilos
+Cascade,US,3,8,4,2,2,3,1,4,3,7,5,2,6,3,"APA, IPA, Blonde, Amber"
+Centennial,US,3,8,4,3,3,4,1,4,2,6,5,3,7,3,"IPA, APA, Red Ale"
+Chinook,US,2,7,5,3,4,6,2,4,3,4,4,2,5,3,"IPA, American Stout, Barleywine"
+Citra,US,1,10,3,1,2,2,1,3,2,5,7,3,9,8,"IPA, NEIPA, Pale Ale"
+Columbus (CTZ),US,3,6,5,2,5,7,2,5,4,3,3,2,4,2,"IPA, Imperial IPA, Porter"
+Amarillo,US,2,8,3,2,2,3,1,3,2,8,6,4,8,6,"APA, IPA, Wheat Ale"
+Simcoe,US,2,7,4,2,4,5,1,5,3,5,6,3,7,4,"IPA, NEIPA, Amber"
+Mosaic,US,2,9,3,2,3,4,2,5,3,6,7,5,8,7,"IPA, NEIPA, APA"
+El Dorado,US,1,8,2,2,2,2,1,3,2,5,6,5,9,8,"IPA, Fruit Ale"
+Sabro,US,2,7,3,2,3,3,3,4,2,6,7,4,9,9,"NEIPA, Fruited IPA"
+Idaho 7,US,2,8,3,2,3,4,2,5,3,6,6,4,8,6,"IPA, Hazy"
+Cashmere,US,2,8,2,2,2,2,2,3,2,7,6,5,8,7,"APA, Kölsch moderna"
+Comet,US,3,7,4,2,3,4,1,5,3,6,7,3,7,4,"Pale Ale, Lager lupulada"
+Hallertau Mittelfrüh,DE,7,2,3,3,4,5,2,8,4,7,2,1,2,2,"Lager, Pilsner"
+Tradition,DE,6,3,3,3,4,5,2,8,4,6,3,2,2,2,"Helles, Kölsch"
+Blanc,DE,3,8,3,2,2,3,2,4,2,6,6,5,8,7,"IPA, Saison moderna"
+Magnum,DE,5,2,3,2,3,5,2,6,4,4,2,1,2,2,"Bock, Pils"
+Tettnang,DE,6,3,3,3,3,5,2,7,4,6,3,2,2,2,"Lager, Wheat"
+Spalt,DE,6,2,3,3,4,6,2,7,4,7,2,1,2,2,"Altbier, Pils"
+Hersbrucker,DE,6,2,3,3,3,5,2,7,4,6,2,1,2,2,"Lager leve, Weiss"
+Perle,DE,5,3,3,2,4,6,2,6,3,6,3,2,3,2,"Pilsner, Kölsch"
+Mandarina Bavaria,DE,2,8,3,2,2,3,2,4,2,6,7,4,8,7,"IPA, Witbier"
+Huell Melon,DE,2,6,3,2,2,2,1,3,2,6,6,4,8,8,"Saison, Wheat"
+Polaris,DE,2,7,3,2,3,3,5,4,3,6,7,4,8,8,"IPA, Lager aromática"
+East Kent Goldings,GB,7,2,3,4,4,4,2,7,3,8,2,2,2,3,"ESB, Bitter"
+Fuggle,GB,7,2,3,3,5,5,2,7,3,7,2,1,2,2,"Porter, Bitter"
+Challenger,GB,5,3,3,3,4,5,2,6,3,6,3,2,3,2,"ESB, IPA inglesa"
+Target,GB,5,3,3,3,5,6,2,6,3,5,3,2,3,2,"Bitter, IPA"
+Northdown,GB,5,3,3,3,4,6,2,6,3,6,3,2,3,2,"Porter, Bitter"
+Progress,GB,6,3,3,3,4,4,2,6,3,7,3,2,3,2,"Bitter, Mild"
+Admiral,GB,5,4,3,3,4,5,2,5,3,6,3,2,4,2,"Bitter, IPA"
+Saaz (Žatec),CZ,8,2,3,3,3,5,2,9,4,8,2,1,2,2,"Pilsner, Lager"
+Sládek,CZ,6,5,3,3,3,4,2,6,3,6,4,3,5,3,Pilsner moderna
+Premiant,CZ,6,4,3,3,3,4,2,6,3,6,3,2,4,3,"Lager, Pilsner"
+Kazbek,CZ,5,6,3,2,3,4,2,5,3,6,5,3,6,4,Lager aromática
+Nelson Sauvin,NZ,2,7,3,2,3,3,2,4,2,6,8,3,6,5,"IPA, Saison"
+Motueka,NZ,3,8,3,2,2,3,2,5,2,6,7,3,7,6,"Lager lupulada, IPA"
+Riwaka,NZ,2,9,3,2,2,3,2,4,2,5,8,3,7,6,"NEIPA, APA"
+Wai-iti,NZ,2,7,2,2,2,2,1,3,2,6,6,3,7,6,Pale Ale leve
+Pacifica,NZ,3,6,3,3,3,3,2,6,3,6,5,2,5,4,"Lager, Pilsner"
+Rakau,NZ,3,7,3,2,3,3,2,5,3,6,6,4,7,6,"IPA, APA"
+Galaxy,AU,2,9,3,1,2,3,1,3,2,6,7,6,9,8,"NEIPA, Hazy"
+Vic Secret,AU,2,8,3,2,3,3,2,4,2,5,7,4,8,7,"IPA, APA"
+Ella,AU,3,7,3,2,3,3,2,5,2,6,6,4,7,6,"Saison, Belgian IPA"
+Enigma,AU,2,8,3,2,3,3,2,4,2,6,7,4,8,7,"IPA, NEIPA"
+Eclipse,AU,2,9,3,2,2,3,2,4,2,5,7,4,9,8,"NEIPA, Pale Ale"
+Topaz,AU,3,7,3,2,3,4,2,5,3,6,6,4,7,6,"IPA, Pale Ale"
+Strisselspalt,FR,7,2,3,3,4,4,2,7,3,8,2,1,2,2,"Lager, Belgian Ale"
+Aramis,FR,6,4,3,3,3,5,2,6,3,7,4,3,5,3,Pilsner moderna
+Barbe Rouge,FR,3,6,3,2,2,3,2,4,2,6,6,7,8,7,IPA frutada
+Mistral,FR,3,6,3,2,3,3,2,5,2,6,6,4,7,6,"Saison, APA"
+Lúpulo León,ES,6,4,3,3,4,4,2,6,3,7,4,3,4,3,Lager artesanal
+Mapuche,AR/CH,5,6,3,3,3,4,2,5,3,6,4,3,5,4,"IPA, APA"
+Cascade Patagonia,AR/CH,3,8,4,2,2,3,1,4,3,7,5,2,6,3,"APA, IPA"
+Nugget Patagonia,AR/CH,4,5,4,3,4,6,2,6,3,6,3,2,4,3,"IPA, Stout"`;
+/* =====================  Utilidades  ===================== */
+const ATTRS = ["Chá","Cítrico","Verde","Caramelado","Amadeirado","Picante","Mentolado","Herbal","Vegetal","Floral","Fruta Verde","Fruta Vermelha","Fruta Amarela","Fruta Doce"];
+function parseCSV(text){
+  // parse simples, suficiente para este CSV (aspas apenas em Estilos)
+  const lines = text.trim().split(/\r?\n/);
+  const headers = lines.shift().split(",");
+  return lines.map(line=>{
+    // separa por vírgula, respeitando campo final possivelmente com vírgulas dentro de aspas
+    const parts = [];
+    let cur = "", inQuotes=false;
+    for (let i=0;i<line.length;i++){
+      const ch=line[i];
+      if(ch === '"' ){ inQuotes = !inQuotes; continue; }
+      if(ch === ',' && !inQuotes){ parts.push(cur); cur=""; }
+      else cur += ch;
+    }
+    parts.push(cur);
+    const obj = {};
+    headers.forEach((h,idx)=> obj[h.trim()] = parts[idx]?.trim() ?? "");
+    // números para atributos
+    ATTRS.forEach(a=> obj[a] = Number(obj[a]));
+    // estilos em array
+    obj.Estilos = (obj.Estilos||"").split(",").map(s=>s.trim()).filter(Boolean);
+    // normaliza campos nome/país
+    obj.nome = obj["Lúpulo"];
+    obj.pais = obj["País"];
+    return obj;
+  });
+}
+const DATA = parseCSV(csv);
+
+// mapa para lookup rápido
+const byName = new Map(DATA.map(d=>[d.nome, d]));
+
+/* =====================  DOM  ===================== */
+const leftSel  = document.getElementById('leftSel');
+const rightSel = document.getElementById('rightSel');
+const qInput   = document.getElementById('q');
+const leftMeta = document.getElementById('leftMeta');
+const rightMeta= document.getElementById('rightMeta');
+
+function formatStyles(arr){ return arr.map(s=>`<span class="tag">${s}</span>`).join(" "); }
+function renderMeta(side, hop){
+  const html = hop ? `
+    <div><b>Nome:</b> ${hop.nome}</div>
+    <div><b>País:</b> ${hop.pais}</div>
+    <div><b>Estilos:</b><div class="styles">${formatStyles(hop.Estilos)}</div></div>
+  ` : `<div style="color:#7f89b4">Selecione um lúpulo para popular os detalhes.</div>`;
+  (side==='left'?leftMeta:rightMeta).innerHTML = html;
+}
+
+let optionsList = [...DATA];
+
+/* popula selects */
+function fillSelects(list){
+  const opts = list.map(d=>`<option value="${d.nome}">${d.nome} (${d.pais})</option>`).join("");
+  leftSel.innerHTML  = `<option value="">— escolher —</option>` + opts;
+  rightSel.innerHTML = `<option value="">— (opcional) —</option>` + opts;
+}
+/* filtro de busca */
+function applyFilter(){
+  const q = qInput.value.trim().toLowerCase();
+  if(!q){ optionsList = [...DATA]; fillSelects(optionsList); return; }
+  optionsList = DATA.filter(d=>{
+    const hay = [d.nome, d.pais, ...(d.Estilos||[])].join(" ").toLowerCase();
+    return hay.includes(q);
+  });
+  fillSelects(optionsList);
+}
+qInput.addEventListener('input', applyFilter);
+
+/* =====================  CHART (Radar)  ===================== */
+const ctx = document.getElementById('radar').getContext('2d');
+
+const gridColor = getComputedStyle(document.documentElement).getPropertyValue('--ring').trim() || '#2a335a';
+
+const radar = new Chart(ctx, {
+  type: 'radar',
+  data: {
+    labels: ATTRS,
+    datasets: [
+      {
+        label: 'Esquerda',
+        data: [], // preenchido ao selecionar
+        backgroundColor: 'rgba(76,141,246,0.22)',
+        borderColor: 'rgba(76,141,246,1)',
+        pointBackgroundColor: 'rgba(76,141,246,1)',
+        pointRadius: 3,
+        borderWidth: 2,
+        order: 1
+      },
+      {
+        label: 'Direita',
+        data: [],
+        backgroundColor: 'rgba(230,91,183,0.22)',
+        borderColor: 'rgba(230,91,183,1)',
+        pointBackgroundColor: 'rgba(230,91,183,1)',
+        pointRadius: 3,
+        borderWidth: 2,
+        order: 2
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      r: {
+        min: 0, max: 10, ticks: { stepSize: 2, showLabelBackdrop:false, color:'#aeb7da' },
+        grid: { color: gridColor },
+        angleLines: { color: gridColor },
+        pointLabels: {
+          color: '#dfe6ff',
+          font: { size: 12, weight: 600 }
+        }
+      }
+    },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          title: (ctx)=> ctx[0].label,
+          label: (ctx)=> `${ctx.dataset.label}: ${ctx.formattedValue}`
+        }
+      }
+    },
+    elements: {
+      line: { tension: 0.25 }
+    },
+    animation: { duration: 350 }
+  }
+});
+
+/* helpers para extrair vetor de atributos */
+function vector(hop){
+  return ATTRS.map(a => hop[a] ?? 0);
+}
+
+/* atualiza gráfico e metadados */
+function update(){
+  const leftName  = leftSel.value;
+  const rightName = rightSel.value;
+
+  const left  = byName.get(leftName);
+  const right = byName.get(rightName);
+
+  radar.data.datasets[0].data = left  ? vector(left)  : [];
+  radar.data.datasets[1].data = right ? vector(right) : [];
+
+  renderMeta('left', left);
+  renderMeta('right', right);
+
+  radar.update();
+}
+
+/* listeners */
+leftSel.addEventListener('change', update);
+rightSel.addEventListener('change', update);
+
+/* inicialização */
+fillSelects(DATA);
+renderMeta('left', null);
+renderMeta('right', null);
+/* pré-seleções simpáticas */
+const defaultLeft = byName.has('Cascade') ? 'Cascade' : DATA[0].nome;
+const defaultRight = byName.has('Citra') ? 'Citra' : (DATA[1]?.nome ?? '');
+leftSel.value = defaultLeft;
+rightSel.value = defaultRight;
+update();
+</script>
+</body>
+</html>
