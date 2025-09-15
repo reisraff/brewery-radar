@@ -93,9 +93,25 @@
   }
   .hint{color:var(--muted); font-size:12px; margin-top:10px}
   canvas{width:100% !important; height:auto !important; max-height:70vh}
+  #chemicalChart, #compoundsChart{max-height:35vh !important}
   .chart-container{position:relative; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif}
   .footnote{margin-top:10px; font-size:12px; color:#9fb0ff}
   .search{margin-bottom:10px}
+  .tabs{
+    display:flex; gap:2px; margin-bottom:18px;
+    background:rgba(255,255,255,.04); border:1px solid #1f2647;
+    border-radius:8px; padding:4px;
+  }
+  .tab-btn{
+    background:transparent; border:none; color:var(--muted);
+    padding:8px 16px; border-radius:6px; cursor:pointer;
+    font-size:14px; font-weight:600;
+    transition:all .2s;
+  }
+  .tab-btn:hover{background:rgba(255,255,255,.08); color:var(--text)}
+  .tab-btn.active{background:var(--brand-left); color:#fff}
+  .tab-content{display:none}
+  .tab-content.active{display:block}
   .lang-selector{
     position:absolute; top:24px; right:24px;
     background:rgba(255,255,255,.04); border:1px solid #1f2647;
@@ -145,7 +161,7 @@
 
       <div class="meta">
         <div class="item">
-          <span class="pill left-pill" data-i18n="left_pill">ESQUERDA</span>
+          <span class="pill left-pill" id="leftPill">ESQUERDA</span>
           <div id="leftMeta"></div>
         </div>
       </div>
@@ -155,16 +171,51 @@
 
     <!-- Painel do gráfico -->
     <div class="panel chart-panel">
-      <div class="header">
-        <h2 style="margin:0" data-i18n="chart_title">Gráfico em Teia</h2>
-        <div class="legend">
-          <span class="key"><span class="dot" style="background:var(--brand-left)"></span> <span data-i18n="legend_left">Esquerda</span></span>
-          <span class="key"><span class="dot" style="background:var(--brand-right)"></span> <span data-i18n="legend_right">Direita</span></span>
-          <span class="key" data-i18n="legend_scale">Escala 0–10</span>
-        </div>
+      <!-- Abas -->
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="aroma" data-i18n="tab_aroma">Perfil Aromático</button>
+        <button class="tab-btn" data-tab="chemical" data-i18n="tab_chemical">Composição Química</button>
       </div>
-      <canvas id="radar"></canvas>
-      <div class="footnote" data-i18n="footnote">As pontas representam as características: Chá, Cítrico, Verde, Caramelado, Amadeirado, Picante, Mentolado, Herbal, Vegetal, Floral, Fruta Verde, Fruta Vermelha, Fruta Amarela, Fruta Doce.</div>
+
+      <!-- Conteúdo da aba Aroma -->
+      <div class="tab-content active" id="aroma-content">
+        <div class="header">
+          <h2 style="margin:0" data-i18n="chart_title">Gráfico em Teia</h2>
+          <div class="legend">
+            <span class="key"><span class="dot" style="background:var(--brand-left)"></span> <span id="leftLegend">Esquerda</span></span>
+            <span class="key"><span class="dot" style="background:var(--brand-right)"></span> <span id="rightLegend">Direita</span></span>
+            <span class="key" data-i18n="legend_scale">Escala 0–10</span>
+          </div>
+        </div>
+        <canvas id="radar"></canvas>
+        <div class="footnote" data-i18n="footnote">As pontas representam as características: Chá, Cítrico, Verde, Caramelado, Amadeirado, Picante, Mentolado, Herbal, Vegetal, Floral, Fruta Verde, Fruta Vermelha, Fruta Amarela, Fruta Doce.</div>
+      </div>
+
+      <!-- Conteúdo da aba Química -->
+      <div class="tab-content" id="chemical-content">
+        <div class="header">
+          <h2 style="margin:0" data-i18n="chemical_title">Composição Química</h2>
+          <div class="legend">
+            <span class="key"><span class="dot" style="background:var(--brand-left)"></span> <span id="leftLegendChem">Esquerda</span></span>
+            <span class="key"><span class="dot" style="background:var(--brand-right)"></span> <span id="rightLegendChem">Direita</span></span>
+            <span class="key" data-i18n="legend_percent">% / ml/100g</span>
+          </div>
+        </div>
+        <canvas id="chemicalChart"></canvas>
+        <div class="footnote" data-i18n="chemical_footnote">Comparação dos níveis de ácidos alfa, ácidos beta e óleos essenciais totais.</div>
+        
+        <!-- Segundo gráfico químico - Compostos -->
+        <div class="header" style="margin-top: 24px;">
+          <h2 style="margin:0" data-i18n="compounds_title">Compostos Aromáticos</h2>
+          <div class="legend">
+            <span class="key"><span class="dot" style="background:var(--brand-left)"></span> <span id="leftLegendCompounds">Esquerda</span></span>
+            <span class="key"><span class="dot" style="background:var(--brand-right)"></span> <span id="rightLegendCompounds">Direita</span></span>
+            <span class="key" data-i18n="legend_percent">% / ml/100g</span>
+          </div>
+        </div>
+        <canvas id="compoundsChart"></canvas>
+        <div class="footnote" data-i18n="compounds_footnote">Comparação dos compostos aromáticos: Mirceno, Humuleno, Cariofileno, Farneseno, Linalol, Geraniol e Polifenóis.</div>
+      </div>
     </div>
 
     <!-- Painel direito -->
@@ -183,7 +234,7 @@
 
       <div class="meta">
         <div class="item">
-          <span class="pill right-pill" data-i18n="right_pill">DIREITA</span>
+          <span class="pill right-pill" id="rightPill">DIREITA</span>
           <div id="rightMeta"></div>
         </div>
       </div>
@@ -220,7 +271,14 @@ const TRANSLATIONS = {
     select_hop: "Selecione um lúpulo para popular os detalhes.",
     hop_name: "Nome:",
     hop_country: "País:",
-    hop_styles: "Estilos:"
+    hop_styles: "Estilos:",
+    tab_aroma: "Perfil Aromático",
+    tab_chemical: "Composição Química",
+    chemical_title: "Composição Química",
+    chemical_footnote: "Comparação dos níveis de ácidos alfa, ácidos beta e óleos essenciais totais.",
+    compounds_title: "Compostos Aromáticos",
+    compounds_footnote: "Comparação dos compostos aromáticos: Mirceno, Humuleno, Cariofileno, Farneseno, Linalol, Geraniol e Polifenóis.",
+    legend_percent: "% / ml/100g"
   },
   en: {
     title: "Hop Radar – Visualization & Comparison",
@@ -247,7 +305,14 @@ const TRANSLATIONS = {
     select_hop: "Select a hop to populate details.",
     hop_name: "Name:",
     hop_country: "Country:",
-    hop_styles: "Styles:"
+    hop_styles: "Styles:",
+    tab_aroma: "Aroma Profile",
+    tab_chemical: "Chemical Composition",
+    chemical_title: "Chemical Composition",
+    chemical_footnote: "Comparison of alpha acid, beta acid and total essential oil levels.",
+    compounds_title: "Aromatic Compounds",
+    compounds_footnote: "Comparison of aromatic compounds: Myrcene, Humulene, Caryophyllene, Farnesene, Linalool, Geraniol and Polyphenols.",
+    legend_percent: "% / ml/100g"
   },
   es: {
     title: "Radar de Lúpulos – Visualización y Comparación",
@@ -274,79 +339,87 @@ const TRANSLATIONS = {
     select_hop: "Selecciona un lúpulo para mostrar detalles.",
     hop_name: "Nombre:",
     hop_country: "País:",
-    hop_styles: "Estilos:"
+    hop_styles: "Estilos:",
+    tab_aroma: "Perfil Aromático",
+    tab_chemical: "Composición Química",
+    chemical_title: "Composición Química",
+    chemical_footnote: "Comparación de los niveles de ácidos alfa, ácidos beta y aceites esenciales totales.",
+    compounds_title: "Compuestos Aromáticos",
+    compounds_footnote: "Comparación de compuestos aromáticos: Mirceno, Humuleno, Cariofileno, Farneseno, Linalol, Geraniol y Polifenoles.",
+    legend_percent: "% / ml/100g"
   }
 };
 
 let currentLang = localStorage.getItem('hop-radar-lang') || 'pt';
 
 /* =====================  DADOS (CSV incorporado)  ===================== */
-const csv = `Lúpulo,País,Chá,Cítrico,Verde,Caramelado,Amadeirado,Picante,Mentolado,Herbal,Vegetal,Floral,Fruta Verde,Fruta Vermelha,Fruta Amarela,Fruta Doce,Estilos
-Cascade,US,3,8,4,2,2,3,1,4,3,7,5,2,6,3,"APA, IPA, Blonde, Amber"
-Centennial,US,3,8,4,3,3,4,1,4,2,6,5,3,7,3,"IPA, APA, Red Ale"
-Chinook,US,2,7,5,3,4,6,2,4,3,4,4,2,5,3,"IPA, American Stout, Barleywine"
-Citra,US,1,10,3,1,2,2,1,3,2,5,7,3,9,8,"IPA, NEIPA, Pale Ale"
-Columbus (CTZ),US,3,6,5,2,5,7,2,5,4,3,3,2,4,2,"IPA, Imperial IPA, Porter"
-Amarillo,US,2,8,3,2,2,3,1,3,2,8,6,4,8,6,"APA, IPA, Wheat Ale"
-Simcoe,US,2,7,4,2,4,5,1,5,3,5,6,3,7,4,"IPA, NEIPA, Amber"
-Mosaic,US,2,9,3,2,3,4,2,5,3,6,7,5,8,7,"IPA, NEIPA, APA"
-El Dorado,US,1,8,2,2,2,2,1,3,2,5,6,5,9,8,"IPA, Fruit Ale"
-Sabro,US,2,7,3,2,3,3,3,4,2,6,7,4,9,9,"NEIPA, Fruited IPA"
-Idaho 7,US,2,8,3,2,3,4,2,5,3,6,6,4,8,6,"IPA, Hazy"
-Cashmere,US,2,8,2,2,2,2,2,3,2,7,6,5,8,7,"APA, Kölsch moderna"
-Ekuanot,EUA,2,8,4,2,3,3,3,5,3,6,6,4,8,6,"IPA, NEIPA, APA, Sour, Saison moderna"
-Comet,US,3,7,4,2,3,4,1,5,3,6,7,3,7,4,"Pale Ale, Lager lupulada"
-Lemondrop,US,4,9,3,1,2,2,2,5,2,6,4,2,8,4,"IPA, APA, Wheat Ale, Blonde Ale"
-Hallertau Mittelfrüh,DE,7,2,3,3,4,5,2,8,4,7,2,1,2,2,"Lager, Pilsner"
-Tradition,DE,6,3,3,3,4,5,2,8,4,6,3,2,2,2,"Helles, Kölsch"
-Blanc,DE,3,8,3,2,2,3,2,4,2,6,6,5,8,7,"IPA, Saison moderna"
-Magnum,DE,5,2,3,2,3,5,2,6,4,4,2,1,2,2,"Bock, Pils"
-Tettnang,DE,6,3,3,3,3,5,2,7,4,6,3,2,2,2,"Lager, Wheat"
-Spalt,DE,6,2,3,3,4,6,2,7,4,7,2,1,2,2,"Altbier, Pils"
-Hersbrucker,DE,6,2,3,3,3,5,2,7,4,6,2,1,2,2,"Lager leve, Weiss"
-Perle,DE,5,3,3,2,4,6,2,6,3,6,3,2,3,2,"Pilsner, Kölsch"
-Mandarina Bavaria,DE,2,8,3,2,2,3,2,4,2,6,7,4,8,7,"IPA, Witbier"
-Huell Melon,DE,2,6,3,2,2,2,1,3,2,6,6,4,8,8,"Saison, Wheat"
-Polaris,DE,2,7,3,2,3,3,5,4,3,6,7,4,8,8,"IPA, Lager aromática"
-East Kent Goldings,GB,7,2,3,4,4,4,2,7,3,8,2,2,2,3,"ESB, Bitter"
-Fuggle,GB,7,2,3,3,5,5,2,7,3,7,2,1,2,2,"Porter, Bitter"
-Challenger,GB,5,3,3,3,4,5,2,6,3,6,3,2,3,2,"ESB, IPA inglesa"
-Target,GB,5,3,3,3,5,6,2,6,3,5,3,2,3,2,"Bitter, IPA"
-Northdown,GB,5,3,3,3,4,6,2,6,3,6,3,2,3,2,"Porter, Bitter"
-Progress,GB,6,3,3,3,4,4,2,6,3,7,3,2,3,2,"Bitter, Mild"
-Admiral,GB,5,4,3,3,4,5,2,5,3,6,3,2,4,2,"Bitter, IPA"
-Saaz (Žatec),CZ,8,2,3,3,3,5,2,9,4,8,2,1,2,2,"Pilsner, Lager"
-Sládek,CZ,6,5,3,3,3,4,2,6,3,6,4,3,5,3,Pilsner moderna
-Premiant,CZ,6,4,3,3,3,4,2,6,3,6,3,2,4,3,"Lager, Pilsner"
-Kazbek,CZ,5,6,3,2,3,4,2,5,3,6,5,3,6,4,Lager aromática
-Nelson Sauvin,NZ,2,7,3,2,3,3,2,4,2,6,8,3,6,5,"IPA, Saison"
-Motueka,NZ,3,8,3,2,2,3,2,5,2,6,7,3,7,6,"Lager lupulada, IPA"
-Riwaka,NZ,2,9,3,2,2,3,2,4,2,5,8,3,7,6,"NEIPA, APA"
-Wai-iti,NZ,2,7,2,2,2,2,1,3,2,6,6,3,7,6,Pale Ale leve
-Pacifica,NZ,3,6,3,3,3,3,2,6,3,6,5,2,5,4,"Lager, Pilsner"
-Rakau,NZ,3,7,3,2,3,3,2,5,3,6,6,4,7,6,"IPA, APA"
-Galaxy,AU,2,9,3,1,2,3,1,3,2,6,7,6,9,8,"NEIPA, Hazy"
-Vic Secret,AU,2,8,3,2,3,3,2,4,2,5,7,4,8,7,"IPA, APA"
-Ella,AU,3,7,3,2,3,3,2,5,2,6,6,4,7,6,"Saison, Belgian IPA"
-Enigma,AU,2,8,3,2,3,3,2,4,2,6,7,4,8,7,"IPA, NEIPA"
-Eclipse,AU,2,9,3,2,2,3,2,4,2,5,7,4,9,8,"NEIPA, Pale Ale"
-Topaz,AU,3,7,3,2,3,4,2,5,3,6,6,4,7,6,"IPA, Pale Ale"
-Strisselspalt,FR,7,2,3,3,4,4,2,7,3,8,2,1,2,2,"Lager, Belgian Ale"
-Aramis,FR,6,4,3,3,3,5,2,6,3,7,4,3,5,3,Pilsner moderna
-Barbe Rouge,FR,3,6,3,2,2,3,2,4,2,6,6,7,8,7,IPA frutada
-Mistral,FR,3,6,3,2,3,3,2,5,2,6,6,4,7,6,"Saison, APA"
-Lúpulo León,ES,6,4,3,3,4,4,2,6,3,7,4,3,4,3,Lager artesanal
-Mapuche,AR/CH,5,6,3,3,3,4,2,5,3,6,4,3,5,4,"IPA, APA"
-Cascade Patagonia,AR/CH,3,8,4,2,2,3,1,4,3,7,5,2,6,3,"APA, IPA"
-Nugget Patagonia,AR/CH,4,5,4,3,4,6,2,6,3,6,3,2,4,3,"IPA, Stout"
-Hallertau Tradition,DE,3,3,4,2,3,2,1,6,3,7,3,1,2,2,"Lager, Pilsner, Bock, Wheat"
-Hallertau Blanc,DE,2,8,3,1,2,1,1,5,2,6,4,3,8,5,"IPA, Saison, Belgian Ale, White IPA"
-Hallertau Magnum,DE,2,2,3,1,2,2,1,4,3,3,2,1,2,1,"Pilsner, Lager, Bock (amargor limpo)"
-East Kent Goldings (EKG),GB,4,3,3,3,4,3,2,6,3,8,3,2,3,2,"Bitter, Pale Ale, ESB, Porter"
-Bramling Cross,GB,3,4,3,2,3,3,2,5,3,6,3,7,3,2,"Bitter, ESB, Stout, Dark Ale"
-Saaz,CZ,3,2,4,2,2,5,2,7,3,8,2,1,2,1,"Pilsner, Lager, Belgian Ale"
-Pacific Jade,NZ,2,7,4,2,3,6,2,6,3,5,4,3,7,4,"IPA, Pale Ale, Lager, Strong Ale"
-Wakatu,NZ,3,7,4,2,3,2,2,6,3,7,4,2,8,4,"Pale Ale, Lager, Blonde Ale, Golden Ale"`;
+const csv = `Lúpulo,País,Chá,Cítrico,Verde,Caramelado,Amadeirado,Picante,Mentolado,Herbal,Vegetal,Floral,Fruta Verde,Fruta Vermelha,Fruta Amarela,Fruta Doce,Estilos,AA_min_%,AA_max_%,BA_min_%,BA_max_%,Oils_min_ml_100g,Oils_max_ml_100g,Myrcene_min_%,Myrcene_max_%,Humulene_min_%,Humulene_max_%,Caryophyllene_min_%,Caryophyllene_max_%,Farnesene_min_%,Farnesene_max_%,Linalool_min_%,Linalool_max_%,Geraniol_min_%,Geraniol_max_%,Polyphenols_min_%,Polyphenols_max_%
+Cascade,US,3,8,4,2,2,3,1,4,3,7,5,2,6,3,"APA, IPA, Blonde, Amber",4.0,9.0,5.5,9.0,0.5,2.0,40.0,60.0,10.0,20.0,4.0,10.0,4.5,8.5,0.1,0.6,0.1,0.5,,
+Centennial,US,3,8,4,3,3,4,1,4,2,6,5,3,7,3,"IPA, APA, Red Ale",7.0,12.0,3.5,5.5,1.0,3.0,55.0,65.0,10.0,20.0,5.0,7.0,0.0,1.0,0.6,0.9,1.2,1.8,,
+Chinook,US,2,7,5,3,4,6,2,4,3,4,4,2,5,3,"IPA, American Stout, Barleywine",11.0,15.0,3.0,4.0,1.5,3.0,35.0,45.0,18.0,24.0,9.0,12.0,0.0,1.0,0.4,0.8,0.2,0.6,,
+Citra,US,1,10,3,1,2,2,1,3,2,5,7,3,9,8,"IPA, NEIPA, Pale Ale",10.0,16.0,3.5,4.5,2.2,2.8,60.0,65.0,11.0,13.0,6.0,8.0,0.0,1.0,1.0,2.0,,,4.5,5.5
+Columbus (CTZ),US,3,6,5,2,5,7,2,5,4,3,3,2,4,2,"IPA, Imperial IPA, Porter",15.0,18.0,4.5,6.0,2.0,4.0,45.0,60.0,9.0,14.0,6.0,10.0,0.1,1.0,0.3,0.6,0.2,0.8,,
+Amarillo,US,2,8,3,2,2,3,1,3,2,8,6,4,8,6,"APA, IPA, Wheat Ale",8.0,11.0,6.0,7.0,1.5,2.5,60.0,70.0,8.0,20.0,5.0,10.0,0.0,1.0,0.6,1.2,0.2,0.8,,
+Simcoe,US,2,7,4,2,4,5,1,5,3,5,6,3,7,4,"IPA, NEIPA, Amber",12.0,16.0,4.0,5.0,2.0,4.5,50.0,65.0,12.0,20.0,6.0,10.0,0.0,1.0,0.5,0.9,0.2,0.8,,
+Mosaic,US,2,9,3,2,3,4,2,5,3,6,7,5,8,7,"IPA, NEIPA, APA",10.0,14.0,3.0,4.5,1.0,3.0,45.0,55.0,10.0,16.0,5.0,9.0,0.0,1.0,0.4,0.8,0.2,0.6,,
+El Dorado,US,1,8,2,2,2,2,1,3,2,5,6,5,9,8,"IPA, Fruit Ale",13.0,17.0,7.0,8.0,1.5,2.5,50.0,60.0,10.0,16.0,5.0,8.0,0.0,1.0,0.3,0.7,0.1,0.5,,
+Sabro,US,2,7,3,2,3,3,3,4,2,6,7,4,9,9,"NEIPA, Fruited IPA",12.0,16.0,4.0,5.0,2.0,3.5,35.0,50.0,10.0,16.0,6.0,10.0,0.0,1.0,0.5,1.0,0.5,1.0,,
+Idaho 7,US,2,8,3,2,3,4,2,5,3,6,6,4,8,6,"IPA, Hazy",9.0,14.0,5.0,7.0,1.0,3.0,40.0,55.0,10.0,18.0,6.0,9.0,0.0,1.0,0.5,1.0,0.2,0.8,,
+Cashmere,US,2,8,2,2,2,2,2,3,2,7,6,5,8,7,"APA, Kölsch moderna",7.7,9.1,6.4,7.1,1.2,1.4,39.0,42.0,26.0,29.0,11.5,13.0,0.0,1.0,0.3,0.7,0.1,0.4,,
+Ekuanot,US,2,8,4,2,3,3,3,5,3,6,6,4,8,6,"IPA, NEIPA, APA, Sour, Saison moderna",13.0,16.0,4.5,5.5,2.0,4.0,50.0,55.0,10.0,15.0,8.0,10.0,0.0,1.0,0.7,1.2,0.3,0.8,,
+Comet,US,3,7,4,2,3,4,1,5,3,6,7,3,7,4,"Pale Ale, Lager lupulada",9.0,12.0,3.0,4.5,1.0,2.0,35.0,55.0,10.0,20.0,6.0,10.0,0.0,1.0,0.3,0.7,0.2,0.6,,
+Hallertau Mittelfrüh,DE,7,2,3,3,4,5,2,8,4,7,2,1,2,2,"Lager, Pilsner",3.0,5.5,3.0,5.0,0.5,1.3,20.0,30.0,30.0,40.0,6.0,12.0,0.1,1.0,0.7,1.1,0.1,0.3,,
+Tradition,DE,6,3,3,3,4,5,2,8,4,6,3,2,2,2,"Helles, Kölsch",4.0,7.0,3.0,5.5,0.8,1.5,20.0,35.0,25.0,35.0,7.0,12.0,0.1,1.0,,,,,,
+Blanc,DE,3,8,3,2,2,3,2,4,2,6,6,5,8,7,"IPA, Saison moderna",9.0,12.0,5.0,6.5,1.2,1.8,20.0,30.0,30.0,40.0,8.0,12.0,0.1,1.0,0.6,1.0,,,,
+Magnum,DE,5,2,3,2,3,5,2,6,4,4,2,1,2,2,"Bock, Pils",11.0,16.0,5.0,7.0,1.4,2.1,45.0,55.0,18.0,22.0,7.0,10.0,,,,,,,,
+Tettnang,DE,6,3,3,3,3,5,2,7,4,6,3,2,2,2,"Lager, Wheat",3.0,6.0,3.0,5.0,0.5,1.0,20.0,35.0,20.0,30.0,8.0,12.0,0.0,1.0,,,,,,
+Spalt,DE,6,2,3,3,4,6,2,7,4,7,2,1,2,2,"Altbier, Pils",2.5,5.5,3.0,5.0,0.5,0.9,20.0,35.0,20.0,30.0,8.0,13.0,12.0,18.0,0.3,0.8,0.2,0.5,,
+Hersbrucker,DE,6,2,3,3,3,5,2,7,4,6,2,1,2,2,"Lager leve, Weiss",2.0,5.0,2.5,5.0,0.5,1.0,20.0,35.0,30.0,40.0,8.0,12.0,0.1,1.0,,,,,,
+Perle,DE,5,3,3,2,4,6,2,6,3,6,3,2,3,2,"Pilsner, Kölsch",6.0,9.0,2.5,4.5,0.8,1.5,35.0,50.0,18.0,25.0,8.0,12.0,,,,,,,,
+Mandarina Bavaria,DE,2,8,3,2,2,3,2,4,2,6,7,4,8,7,"IPA, Witbier",7.0,10.0,5.0,6.5,1.5,2.3,35.0,45.0,18.0,25.0,7.0,10.0,,,0.8,1.5,,,,
+Huell Melon,DE,2,6,3,2,2,2,1,3,2,6,6,4,8,8,"Saison, Wheat",6.0,8.0,6.0,8.0,0.8,1.5,30.0,40.0,20.0,30.0,8.0,12.0,,,0.6,1.2,,,,
+Polaris,DE,2,7,3,2,3,3,5,4,3,6,7,4,8,8,"IPA, Lager aromática",18.0,23.0,3.0,5.0,2.5,4.5,40.0,55.0,16.0,22.0,8.0,12.0,,,,,,,,
+East Kent Goldings,GB,7,2,3,4,4,4,2,7,3,8,2,2,2,3,"ESB, Bitter",4.0,6.5,2.0,3.5,0.4,1.0,20.0,35.0,20.0,30.0,8.0,12.0,0.5,1.0,,,,,,
+Fuggle,GB,7,2,3,3,5,5,2,7,3,7,2,1,2,2,"Porter, Bitter",3.0,5.5,2.0,3.0,0.7,1.2,20.0,35.0,20.0,30.0,8.0,12.0,,,,,,,,
+Challenger,GB,5,3,3,3,4,5,2,6,3,6,3,2,3,2,"ESB, IPA inglesa",6.5,9.5,3.5,4.5,1.0,1.8,25.0,35.0,20.0,30.0,8.0,12.0,,,,,,,,
+Target,GB,5,3,3,3,5,6,2,6,3,5,3,2,3,2,"Bitter, IPA",9.0,12.0,3.5,5.0,1.0,1.8,35.0,45.0,15.0,25.0,8.0,12.0,,,,,,,,
+Northdown,GB,5,3,3,3,4,6,2,6,3,6,3,2,3,2,"Porter, Bitter",7.0,10.0,3.5,5.5,1.2,1.8,30.0,40.0,18.0,25.0,8.0,12.0,,,,,,,,
+Progress,GB,6,3,3,3,4,4,2,6,3,7,3,2,3,2,"Bitter, Mild",5.0,7.0,2.0,3.0,0.8,1.2,25.0,35.0,20.0,30.0,8.0,12.0,,,,,,,,
+Admiral,GB,5,4,3,3,4,5,2,5,3,6,3,2,4,2,"Bitter, IPA",13.0,16.0,4.0,6.0,1.0,2.0,35.0,45.0,15.0,25.0,8.0,12.0,,,,,,,,
+Saaz,CZ,8,2,3,3,3,5,2,9,4,8,2,1,2,2,"Pilsner, Lager",2.0,6.0,3.0,4.5,0.4,1.0,20.0,35.0,20.0,30.0,8.0,12.0,12.0,18.0,,,,,,
+Sladek,CZ,6,5,3,3,3,4,2,6,3,6,4,3,5,3,Pilsner moderna,4.0,8.0,4.0,6.0,0.8,1.6,30.0,40.0,18.0,25.0,8.0,12.0,,,,,,,,
+Premiant,CZ,6,4,3,3,3,4,2,6,3,6,3,2,4,3,"Lager, Pilsner",7.0,10.0,4.0,6.0,1.0,1.6,35.0,45.0,18.0,25.0,8.0,12.0,,,,,,,,
+Kazbek,CZ,5,6,3,2,3,4,2,5,3,6,5,3,6,4,Lager aromática,5.0,8.0,4.0,6.0,0.9,1.5,35.0,45.0,18.0,25.0,8.0,12.0,,,,,,,,
+Nelson Sauvin,NZ,2,7,3,2,3,3,2,4,2,6,8,3,6,5,"IPA, Saison",10.0,13.0,6.0,8.0,0.9,1.2,35.0,40.0,15.0,20.0,8.0,12.0,8.0,12.0,0.6,1.2,0.2,0.6,,
+Motueka,NZ,3,8,3,2,2,3,2,5,2,6,7,3,7,6,"Lager lupulada, IPA",6.5,8.5,5.0,5.5,0.8,1.5,45.0,60.0,10.0,15.0,6.0,9.0,10.0,15.0,0.8,2.0,0.8,1.5,,
+Riwaka,NZ,2,9,3,2,2,3,2,4,2,5,8,3,7,6,"NEIPA, APA",4.5,6.5,4.0,5.0,0.8,1.2,45.0,60.0,10.0,15.0,6.0,9.0,4.0,8.0,,,,,,
+Wai-iti,NZ,2,7,2,2,2,2,1,3,2,6,6,3,7,6,Pale Ale leve,3.0,4.5,3.5,4.5,0.6,1.0,45.0,55.0,10.0,15.0,6.0,9.0,8.0,12.0,,,,,,
+Pacifica,NZ,3,6,3,3,3,3,2,6,3,6,5,2,5,4,"Lager, Pilsner",5.0,6.5,6.0,8.0,0.8,1.2,35.0,45.0,15.0,25.0,8.0,12.0,0.0,1.0,,,,,,
+Rakau,NZ,3,7,3,2,3,3,2,5,3,6,6,4,7,6,"IPA, APA",10.0,11.0,5.0,7.0,1.5,2.0,45.0,55.0,10.0,15.0,6.0,9.0,3.0,6.0,,,,,,
+Pacific Jade,NZ,2,7,4,2,3,6,2,6,3,5,4,3,7,4,"IPA, Pale Ale, Lager, Strong Ale",12.0,14.0,8.0,10.0,1.4,2.0,30.0,40.0,20.0,30.0,8.0,12.0,2.0,4.0,,,,,,
+Wakatu,NZ,3,7,4,2,3,2,2,6,3,7,4,2,8,4,"Pale Ale, Lager, Blonde Ale, Golden Ale",6.5,8.5,7.0,8.0,0.8,1.2,30.0,40.0,20.0,30.0,8.0,12.0,12.0,18.0,,,,,,
+Galaxy,AU,2,9,3,1,2,3,1,3,2,6,7,6,9,8,"NEIPA, Hazy",13.0,18.5,6.1,11.6,1.9,2.9,32.0,56.0,0.8,2.2,7.0,14.7,2.8,5.1,0.5,1.0,0.1,0.3,,
+Vic Secret,AU,2,8,3,2,3,3,2,4,2,5,7,4,8,7,"IPA, APA",14.0,17.0,6.0,7.0,2.0,2.6,50.0,60.0,10.0,15.0,8.0,12.0,,,,,,,,
+Ella,AU,3,7,3,2,3,3,2,5,2,6,6,4,7,6,"Saison, Belgian IPA",13.0,16.0,4.0,7.0,1.5,2.4,30.0,40.0,18.0,25.0,8.0,12.0,,,,,,,,
+Enigma,AU,2,8,3,2,3,3,2,4,2,6,7,4,8,7,"IPA, NEIPA",15.0,18.0,4.8,6.4,2.4,3.0,35.0,45.0,15.0,20.0,8.0,12.0,,,,,,,,
+Eclipse,AU,2,9,3,2,2,3,2,4,2,5,7,4,9,8,"NEIPA, Pale Ale",15.0,19.0,4.5,6.5,2.0,3.0,35.0,45.0,15.0,20.0,8.0,12.0,,,,,,,,
+Topaz,AU,3,7,3,2,3,4,2,5,3,6,6,4,7,6,"IPA, Pale Ale",13.0,18.0,5.0,7.0,1.5,2.5,30.0,40.0,18.0,25.0,8.0,12.0,,,,,,,,
+Strisselspalt,FR,7,2,3,3,4,4,2,7,3,8,2,1,2,2,"Lager, Belgian Ale",3.0,6.0,2.0,3.5,0.5,0.9,20.0,35.0,20.0,30.0,8.0,12.0,,,,,,,,
+Aramis,FR,6,4,3,3,3,5,2,6,3,7,4,3,5,3,Pilsner moderna,6.0,8.0,3.5,4.5,0.7,1.2,20.0,35.0,20.0,30.0,8.0,12.0,,,,,,,,
+Barbe Rouge,FR,3,6,3,2,2,3,2,4,2,6,6,7,8,7,IPA frutada,7.0,10.0,3.5,4.5,1.1,1.6,35.0,60.0,15.0,25.0,8.0,12.0,,,,,,,,
+Mistral,FR,3,6,3,2,3,3,2,5,2,6,6,4,7,6,"Saison, APA",7.0,9.0,3.0,5.0,1.2,1.8,30.0,40.0,18.0,25.0,8.0,12.0,,,,,,,,
+Lúpulo León,ES,6,4,3,3,4,4,2,6,3,7,4,3,4,3,Lager artesanal,5.0,8.0,3.0,5.0,0.8,1.3,,,,,,,,,,,,,,
+Mapuche,AR,5,6,3,3,3,4,2,5,3,6,4,3,5,4,"IPA, APA",5.0,7.0,3.0,5.0,0.8,1.5,,,,,,,,,,,,,,
+Cascade Patagonia,AR,3,8,4,2,2,3,1,4,3,7,5,2,6,3,"APA, IPA",4.0,9.0,5.5,9.0,0.5,2.0,40.0,60.0,10.0,20.0,4.0,10.0,4.5,8.5,,,,,,
+Nugget Patagonia,AR,4,5,4,3,4,6,2,6,3,6,3,2,4,3,"IPA, Stout",11.0,14.0,4.0,6.0,1.5,2.0,45.0,55.0,18.0,25.0,8.0,12.0,,,,,,,,
+Hallertau Tradition,DE,3,3,4,2,3,2,1,6,3,7,3,1,2,2,"Lager, Pilsner, Bock, Wheat",4.0,7.0,3.0,6.0,0.4,1.4,17.0,32.0,35.0,55.0,10.0,15.0,0.0,1.0,0.7,1.3,0.1,0.5,0.0,5.0
+Hallertau Blanc,DE,2,8,3,1,2,1,1,5,2,6,4,3,8,5,"IPA, Saison, Belgian Ale, White IPA",9.0,12.0,4.0,7.0,0.8,2.2,50.0,75.0,0.0,3.0,0.0,2.0,0.0,3.5,0.1,0.5,,,, 
+Hallertau Magnum,DE,2,2,3,1,2,2,1,4,3,3,2,1,2,1,"Pilsner, Lager, Bock (amargor limpo)",10.0,14.0,5.0,7.0,1.5,3.0,40.0,60.0,10.0,20.0,8.0,12.0,0.0,1.0,,,,,,
+East Kent Goldings (EKG),GB,4,3,3,3,4,3,2,6,3,8,3,2,3,2,"Bitter, Pale Ale, ESB, Porter",4.5,6.5,1.9,2.8,0.4,0.8,18.0,28.0,27.0,45.0,9.0,17.0,0.0,1.0,0.5,1.1,0.1,0.3,,
+Bramling Cross,GB,3,4,3,2,3,3,2,5,3,6,3,7,3,2,"Bitter, ESB, Stout, Dark Ale",5.0,8.0,2.0,3.5,0.7,1.7,34.0,38.0,15.0,25.0,10.0,15.0,0.0,1.0,0.0,0.9,,,,
+Lemondrop,US,2,9,3,1,2,2,1,3,2,5,6,2,7,6,4,"IPA, Pale Ale, Blonde, Wheat",5.0,7.0,4.0,6.0,1.0,2.0,60.0,70.0,12.0,20.0,6.0,12.0,0.0,1.0,0.3,0.8,0.2,0.6,,
+`;
+
 /* =====================  Utilidades  ===================== */
 // Mapa de países para códigos ISO dos flags
 const COUNTRY_FLAGS = {
@@ -434,6 +507,14 @@ const qInput   = document.getElementById('q');
 const q2Input  = document.getElementById('q2');
 const leftMeta = document.getElementById('leftMeta');
 const rightMeta= document.getElementById('rightMeta');
+const leftPill = document.getElementById('leftPill');
+const rightPill = document.getElementById('rightPill');
+const leftLegend = document.getElementById('leftLegend');
+const rightLegend = document.getElementById('rightLegend');
+const leftLegendChem = document.getElementById('leftLegendChem');
+const rightLegendChem = document.getElementById('rightLegendChem');
+const leftLegendCompounds = document.getElementById('leftLegendCompounds');
+const rightLegendCompounds = document.getElementById('rightLegendCompounds');
 
 function formatStyles(arr){ return arr.map(s=>`<span class="tag">${s}</span>`).join(" "); }
 function renderMeta(side, hop){
@@ -503,7 +584,7 @@ const radar = new Chart(ctx, {
     labels: ATTRS_WITH_ICONS,
     datasets: [
       {
-        label: 'Esquerda',
+        label: '',
         data: [], // preenchido ao selecionar
         backgroundColor: 'rgba(76,141,246,0.22)',
         borderColor: 'rgba(76,141,246,1)',
@@ -513,7 +594,7 @@ const radar = new Chart(ctx, {
         order: 1
       },
       {
-        label: 'Direita',
+        label: '',
         data: [],
         backgroundColor: 'rgba(230,91,183,0.22)',
         borderColor: 'rgba(230,91,183,1)',
@@ -554,9 +635,168 @@ const radar = new Chart(ctx, {
   }
 });
 
+/* =====================  CHEMICAL CHART (Bar)  ===================== */
+const chemCtx = document.getElementById('chemicalChart').getContext('2d');
+
+const chemicalChart = new Chart(chemCtx, {
+  type: 'bar',
+  data: {
+    labels: ['Ácidos Alfa (%)', 'Ácidos Beta (%)', 'Óleos Essenciais (ml/100g)'],
+    datasets: [
+      {
+        label: '',
+        data: [0, 0, 0],
+        backgroundColor: 'rgba(76,141,246,0.7)',
+        borderColor: 'rgba(76,141,246,1)',
+        borderWidth: 2,
+        maxBarThickness: 60
+      },
+      {
+        label: '',
+        data: [0, 0, 0],
+        backgroundColor: 'rgba(230,91,183,0.7)',
+        borderColor: 'rgba(230,91,183,1)',
+        borderWidth: 2,
+        maxBarThickness: 60
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      x: {
+        ticks: { color: '#dfe6ff', font: { size: 11 } },
+        grid: { color: gridColor }
+      },
+      y: {
+        ticks: { color: '#aeb7da', font: { size: 11 } },
+        grid: { color: gridColor },
+        beginAtZero: true
+      }
+    },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          title: (ctx) => ctx[0].label,
+          label: (ctx) => {
+            const unit = ctx.label.includes('ml/100g') ? ' ml/100g' : '%';
+            return `${ctx.dataset.label}: ${ctx.formattedValue}${unit}`;
+          }
+        }
+      }
+    },
+    animation: { duration: 350 }
+  }
+});
+
+/* =====================  COMPOUNDS CHART (Bar)  ===================== */
+const compoundsCtx = document.getElementById('compoundsChart').getContext('2d');
+
+const compoundsChart = new Chart(compoundsCtx, {
+  type: 'bar',
+  data: {
+    labels: ['Mirceno (%)', 'Humuleno (%)', 'Cariofileno (%)', 'Farneseno (%)', 'Linalol (%)', 'Geraniol (%)', 'Polifenóis (%)'],
+    datasets: [
+      {
+        label: '',
+        data: [0, 0, 0, 0, 0, 0, 0],
+        backgroundColor: 'rgba(76,141,246,0.7)',
+        borderColor: 'rgba(76,141,246,1)',
+        borderWidth: 2,
+        maxBarThickness: 60
+      },
+      {
+        label: '',
+        data: [0, 0, 0, 0, 0, 0, 0],
+        backgroundColor: 'rgba(230,91,183,0.7)',
+        borderColor: 'rgba(230,91,183,1)',
+        borderWidth: 2,
+        maxBarThickness: 60
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      x: {
+        ticks: { color: '#dfe6ff', font: { size: 11 } },
+        grid: { color: gridColor }
+      },
+      y: {
+        ticks: { color: '#aeb7da', font: { size: 11 } },
+        grid: { color: gridColor },
+        beginAtZero: true
+      }
+    },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          title: (ctx) => ctx[0].label,
+          label: (ctx) => `${ctx.dataset.label}: ${ctx.formattedValue}%`
+        }
+      }
+    },
+    animation: { duration: 350 }
+  }
+});
+
 /* helpers para extrair vetor de atributos */
 function vector(hop){
   return ATTRS.map(a => hop[a] ?? 0);
+}
+
+/* helpers para extrair dados químicos */
+function getChemicalData(hop) {
+  if (!hop) return [0, 0, 0];
+  
+  const alphaMin = parseFloat(hop['AA_min_%']) || 0;
+  const alphaMax = parseFloat(hop['AA_max_%']) || 0;
+  const betaMin = parseFloat(hop['BA_min_%']) || 0;
+  const betaMax = parseFloat(hop['BA_max_%']) || 0;
+  const oilsMin = parseFloat(hop.Oils_min_ml_100g) || 0;
+  const oilsMax = parseFloat(hop.Oils_max_ml_100g) || 0;
+  
+  // Usar a média dos valores min/max
+  const alpha = alphaMin && alphaMax ? (alphaMin + alphaMax) / 2 : (alphaMin || alphaMax || 0);
+  const beta = betaMin && betaMax ? (betaMin + betaMax) / 2 : (betaMin || betaMax || 0);
+  const oils = oilsMin && oilsMax ? (oilsMin + oilsMax) / 2 : (oilsMin || oilsMax || 0);
+  
+  return [alpha, beta, oils];
+}
+
+/* helpers para extrair dados dos compostos */
+function getCompoundsData(hop) {
+  if (!hop) return [0, 0, 0, 0, 0, 0, 0];
+  
+  const myrceneMin = parseFloat(hop['Myrcene_min_%']) || 0;
+  const myrceneMax = parseFloat(hop['Myrcene_max_%']) || 0;
+  const humuleneMin = parseFloat(hop['Humulene_min_%']) || 0;
+  const humuleneMax = parseFloat(hop['Humulene_max_%']) || 0;
+  const caryophylleneMin = parseFloat(hop['Caryophyllene_min_%']) || 0;
+  const caryophylleneMax = parseFloat(hop['Caryophyllene_max_%']) || 0;
+  const farneseneMin = parseFloat(hop['Farnesene_min_%']) || 0;
+  const farneseneMax = parseFloat(hop['Farnesene_max_%']) || 0;
+  const linaloolMin = parseFloat(hop['Linalool_min_%']) || 0;
+  const linaloolMax = parseFloat(hop['Linalool_max_%']) || 0;
+  const geraniolMin = parseFloat(hop['Geraniol_min_%']) || 0;
+  const geraniolMax = parseFloat(hop['Geraniol_max_%']) || 0;
+  const polyphenolsMin = parseFloat(hop['Polyphenols_min_%']) || 0;
+  const polyphenolsMax = parseFloat(hop['Polyphenols_max_%']) || 0;
+  
+  // Usar a média dos valores min/max
+  const myrcene = myrceneMin && myrceneMax ? (myrceneMin + myrceneMax) / 2 : (myrceneMin || myrceneMax || 0);
+  const humulene = humuleneMin && humuleneMax ? (humuleneMin + humuleneMax) / 2 : (humuleneMin || humuleneMax || 0);
+  const caryophyllene = caryophylleneMin && caryophylleneMax ? (caryophylleneMin + caryophylleneMax) / 2 : (caryophylleneMin || caryophylleneMax || 0);
+  const farnesene = farneseneMin && farneseneMax ? (farneseneMin + farneseneMax) / 2 : (farneseneMin || farneseneMax || 0);
+  const linalool = linaloolMin && linaloolMax ? (linaloolMin + linaloolMax) / 2 : (linaloolMin || linaloolMax || 0);
+  const geraniol = geraniolMin && geraniolMax ? (geraniolMin + geraniolMax) / 2 : (geraniolMin || geraniolMax || 0);
+  const polyphenols = polyphenolsMin && polyphenolsMax ? (polyphenolsMin + polyphenolsMax) / 2 : (polyphenolsMin || polyphenolsMax || 0);
+  
+  return [myrcene, humulene, caryophyllene, farnesene, linalool, geraniol, polyphenols];
 }
 
 /* atualiza gráfico e metadados */
@@ -567,18 +807,62 @@ function update(){
   const left  = byName.get(leftName);
   const right = byName.get(rightName);
 
+  // Atualizar os dados do gráfico radar
   radar.data.datasets[0].data = left  ? vector(left)  : [];
   radar.data.datasets[1].data = right ? vector(right) : [];
+
+  // Atualizar os labels dos datasets do radar com os nomes dos lúpulos
+  radar.data.datasets[0].label = left ? left.nome : '';
+  radar.data.datasets[1].label = right ? right.nome : '';
+
+  // Atualizar os dados do gráfico químico
+  chemicalChart.data.datasets[0].data = left ? getChemicalData(left) : [0, 0, 0];
+  chemicalChart.data.datasets[1].data = right ? getChemicalData(right) : [0, 0, 0];
+  
+  // Atualizar os labels dos datasets do gráfico químico
+  chemicalChart.data.datasets[0].label = left ? left.nome : '';
+  chemicalChart.data.datasets[1].label = right ? right.nome : '';
+
+  // Atualizar os dados do gráfico de compostos
+  compoundsChart.data.datasets[0].data = left ? getCompoundsData(left) : [0, 0, 0, 0, 0, 0, 0];
+  compoundsChart.data.datasets[1].data = right ? getCompoundsData(right) : [0, 0, 0, 0, 0, 0, 0];
+  
+  // Atualizar os labels dos datasets do gráfico de compostos
+  compoundsChart.data.datasets[0].label = left ? left.nome : '';
+  compoundsChart.data.datasets[1].label = right ? right.nome : '';
+
+  // Atualizar pills com os nomes dos lúpulos
+  const t = TRANSLATIONS[currentLang];
+  leftPill.textContent = left ? left.nome : t.left_pill;
+  rightPill.textContent = right ? right.nome : t.right_pill;
+
+  // Atualizar legendas do gráfico radar com os nomes dos lúpulos ou texto padrão
+  leftLegend.textContent = left ? left.nome : t.legend_left;
+  rightLegend.textContent = right ? right.nome : t.legend_right;
+
+  // Atualizar legendas do gráfico químico com os nomes dos lúpulos ou texto padrão
+  leftLegendChem.textContent = left ? left.nome : t.legend_left;
+  rightLegendChem.textContent = right ? right.nome : t.legend_right;
+
+  // Atualizar legendas do gráfico de compostos com os nomes dos lúpulos ou texto padrão
+  leftLegendCompounds.textContent = left ? left.nome : t.legend_left;
+  rightLegendCompounds.textContent = right ? right.nome : t.legend_right;
 
   renderMeta('left', left);
   renderMeta('right', right);
 
   radar.update();
+  chemicalChart.update();
+  compoundsChart.update();
 }
 
 /* =====================  INTERNACIONALIZAÇÃO - FUNÇÕES  ===================== */
 function updateTexts() {
   const t = TRANSLATIONS[currentLang];
+  
+  // Preserva as seleções atuais
+  const currentLeftSelection = leftSel.value;
+  const currentRightSelection = rightSel.value;
   
   // Atualiza todos os elementos com data-i18n
   document.querySelectorAll('[data-i18n]').forEach(el => {
@@ -596,13 +880,14 @@ function updateTexts() {
     }
   });
   
-  // Atualiza labels do chart
-  radar.data.datasets[0].label = t.legend_left;
-  radar.data.datasets[1].label = t.legend_right;
-  radar.update();
+  // Recarrega selects e metadados, preservando filtros atuais
+  fillLeftSelect(leftOptionsList);
+  fillRightSelect(rightOptionsList);
   
-  // Recarrega selects e metadados
-  fillSelects(leftOptionsList);
+  // Restaura as seleções
+  leftSel.value = currentLeftSelection;
+  rightSel.value = currentRightSelection;
+  
   update();
 }
 
@@ -618,9 +903,27 @@ function switchLanguage(lang) {
   updateTexts();
 }
 
+/* =====================  SISTEMA DE ABAS  ===================== */
+function switchTab(tabName) {
+  // Atualizar botões das abas
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tabName);
+  });
+  
+  // Atualizar conteúdo das abas
+  document.querySelectorAll('.tab-content').forEach(content => {
+    content.classList.toggle('active', content.id === `${tabName}-content`);
+  });
+}
+
 /* listeners */
 leftSel.addEventListener('change', update);
 rightSel.addEventListener('change', update);
+
+// Tab switching
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+});
 
 // Language switching
 document.querySelectorAll('.lang-btn').forEach(btn => {
@@ -628,15 +931,18 @@ document.querySelectorAll('.lang-btn').forEach(btn => {
 });
 
 /* inicialização */
-// Configura idioma inicial
-switchLanguage(currentLang);
+// Aguarda o DOM estar pronto
+document.addEventListener('DOMContentLoaded', function() {
+  // Configura idioma inicial
+  switchLanguage(currentLang);
 
-/* pré-seleções simpáticas */
-const defaultLeft = byName.has('Cascade') ? 'Cascade' : DATA[0].nome;
-const defaultRight = byName.has('Citra') ? 'Citra' : (DATA[1]?.nome ?? '');
-leftSel.value = defaultLeft;
-rightSel.value = defaultRight;
-update();
+  /* pré-seleções simpáticas */
+  const defaultLeft = byName.has('Cascade') ? 'Cascade' : DATA[0].nome;
+  const defaultRight = byName.has('Citra') ? 'Citra' : (DATA[1]?.nome ?? '');
+  leftSel.value = defaultLeft;
+  rightSel.value = defaultRight;
+  update();
+});
 </script>
 </body>
 </html>
