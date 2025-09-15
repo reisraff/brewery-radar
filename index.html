@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Hop Radar – View & Compare Hops</title>
+<title>Radar de Cervejaria – Visualização & Comparação</title>
 <!-- Chart.js via CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <style>
@@ -92,8 +92,8 @@
     width:10px; height:10px; border-radius:50%
   }
   .hint{color:var(--muted); font-size:12px; margin-top:10px}
-  canvas{width:100% !important; height:auto !important; max-height:70vh}
-  #chemicalChart, #compoundsChart{max-height:35vh !important}
+  canvas{width:100% !important; height:auto !important; max-height:63vh}
+  #chemicalChart, #compoundsChart{max-height:31.5vh !important}
   .chart-container{position:relative; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif}
   .footnote{margin-top:10px; font-size:12px; color:#9fb0ff}
   .search{margin-bottom:10px}
@@ -131,6 +131,23 @@
     margin-left:6px; vertical-align:middle; border:1px solid rgba(255,255,255,.15);
     background-size:cover; background-position:center;
   }
+  .main-menu{
+    display:flex; gap:2px; margin-bottom:18px;
+    background:rgba(255,255,255,.04); border:1px solid #1f2647;
+    border-radius:8px; padding:4px;
+  }
+  .menu-btn{
+    background:transparent; border:none; color:var(--muted);
+    padding:12px 24px; border-radius:6px; cursor:pointer;
+    font-size:16px; font-weight:700;
+    transition:all .2s;
+  }
+  .menu-btn:hover{background:rgba(255,255,255,.08); color:var(--text)}
+  .menu-btn.active{background:var(--brand-left); color:#fff}
+  .tool-title{margin-bottom:18px}
+  .tool-title h2{margin:0 0 8px 0; font-size:20px; color:var(--text)}
+  .tool-section{display:none}
+  .tool-section.active{display:block}
 </style>
 </head>
 <body>
@@ -140,13 +157,23 @@
     <button class="lang-btn" data-lang="es">ES</button>
   </div>
   
-  <h1 data-i18n="title">Radar de Lúpulos – Visualização & Comparação</h1>
-  <div class="sub" data-i18n="subtitle">Selecione um lúpulo para o <b>lado esquerdo</b> (azul) e, opcionalmente, outro para o <b>lado direito</b> (magenta). Passe o mouse no gráfico para ver os valores.</div>
-  <div class="sub" style="color: #f59e0b; margin-top: 8px;" data-i18n="warning">⚠️ se algum item não estiver incluido na lista ou estiver incorreto, envie um email para reisraff@gmail.com</div>
+  <h1 data-i18n="main_title">Brewery Radar – Visualization & Comparison</h1>
+  
+  <!-- Menu principal -->
+  <div class="main-menu">
+    <button class="menu-btn active" data-tool="hop" data-i18n="menu_hop_radar">Hop Radar</button>
+    <button class="menu-btn" data-tool="yeast" data-i18n="menu_yeast_radar">Yeast Radar</button>
+  </div>
+  
+  <div class="tool-title">
+    <div class="sub" style="color: #f59e0b; margin-top: 8px;" data-i18n="warning">⚠️ se algum item não estiver incluido na lista ou estiver incorreto, envie um email para reisraff@gmail.com</div>
+  </div>
 
-  <div class="container">
-    <!-- Painel esquerdo -->
-    <div class="panel left-panel">
+  <!-- Hop Radar Tool -->
+  <div class="tool-section active" id="hop-tool">
+    <div class="container">
+      <!-- Painel esquerdo -->
+      <div class="panel left-panel">
       <h2 data-i18n="left_label">Lado Esquerdo (Azul)</h2>
 
       <div class="search">
@@ -241,13 +268,105 @@
 
       <div class="hint" data-i18n="hint_right">Opcional: selecione um segundo lúpulo para comparação.</div>
     </div>
+    </div>
+  </div>
+
+  <!-- Yeast Radar Tool -->
+  <div class="tool-section" id="yeast-tool">
+    <div class="container">
+      <!-- Painel esquerdo -->
+      <div class="panel left-panel">
+        <h2 data-i18n="left_label_yeast">Lado Esquerdo (Azul)</h2>
+
+        <div class="search">
+          <label for="qYeast" data-i18n="filter_label_yeast">Filtro rápido (por nome, país ou tipo)</label>
+          <input id="qYeast" type="text" data-i18n-placeholder="filter_placeholder_yeast" placeholder="Ex.: Ale, Lager, US-05..." />
+        </div>
+
+        <div>
+          <label for="leftSelYeast" data-i18n="left_selector_label_yeast">Selecionar Levedura</label>
+          <select id="leftSelYeast"></select>
+        </div>
+
+        <div class="meta">
+          <div class="item">
+            <span class="pill left-pill" id="leftPillYeast">ESQUERDA</span>
+            <div id="leftMetaYeast"></div>
+          </div>
+        </div>
+
+        <div class="hint" data-i18n="hint_yeast">Dica: use o filtro para reduzir a lista por país (ex.: <i>US</i>, <i>DE</i>, <i>GB</i>) ou por um tipo (ex.: <i>Ale</i>, <i>Lager</i>).</div>
+      </div>
+
+      <!-- Painel do gráfico -->
+      <div class="panel chart-panel">
+        <!-- Abas -->
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="yeast-aroma" data-i18n="tab_yeast_aroma">Perfil de Fermentação</button>
+          <button class="tab-btn" data-tab="yeast-specs" data-i18n="tab_yeast_specs">Especificações</button>
+        </div>
+
+        <!-- Conteúdo da aba Perfil de Fermentação -->
+        <div class="tab-content active" id="yeast-aroma-content">
+          <div class="header">
+            <h2 style="margin:0" data-i18n="yeast_chart_title">Gráfico em Teia</h2>
+            <div class="legend">
+              <span class="key"><span class="dot" style="background:var(--brand-left)"></span> <span id="leftLegendYeast">Esquerda</span></span>
+              <span class="key"><span class="dot" style="background:var(--brand-right)"></span> <span id="rightLegendYeast">Direita</span></span>
+              <span class="key" data-i18n="legend_scale">Escala 0–10</span>
+            </div>
+          </div>
+          <canvas id="yeastRadar"></canvas>
+          <div class="footnote" data-i18n="yeast_footnote">As pontas representam as características: Frutal, Floral, Picante, Fenol, Ester, Limpo, Cremoso, Mineral, Alcoólico, Acidez, Complexo, Selva, Terroso, Doce.</div>
+        </div>
+
+        <!-- Conteúdo da aba Especificações -->
+        <div class="tab-content" id="yeast-specs-content">
+          <div class="header">
+            <h2 style="margin:0" data-i18n="yeast_specs_title">Especificações</h2>
+            <div class="legend">
+              <span class="key"><span class="dot" style="background:var(--brand-left)"></span> <span id="leftLegendYeastSpecs">Esquerda</span></span>
+              <span class="key"><span class="dot" style="background:var(--brand-right)"></span> <span id="rightLegendYeastSpecs">Direita</span></span>
+            </div>
+          </div>
+          <canvas id="yeastSpecsChart"></canvas>
+          <div class="footnote" data-i18n="yeast_specs_footnote">Comparação de tolerância ao álcool e faixa de temperatura ideal.</div>
+        </div>
+      </div>
+
+      <!-- Painel direito -->
+      <div class="panel right-panel">
+        <h2 data-i18n="right_label_yeast">Lado Direito (Magenta)</h2>
+
+        <div class="search">
+          <label for="q2Yeast" data-i18n="filter_label_yeast">Filtro rápido (por nome, país ou tipo)</label>
+          <input id="q2Yeast" type="text" data-i18n-placeholder="filter_placeholder_yeast" placeholder="Ex.: Ale, Lager, US-05..." />
+        </div>
+
+        <div>
+          <label for="rightSelYeast" data-i18n="right_selector_label_yeast">Selecionar Levedura</label>
+          <select id="rightSelYeast"></select>
+        </div>
+
+        <div class="meta">
+          <div class="item">
+            <span class="pill right-pill" id="rightPillYeast">DIREITA</span>
+            <div id="rightMetaYeast"></div>
+          </div>
+        </div>
+
+        <div class="hint" data-i18n="hint_right_yeast">Opcional: selecione uma segunda levedura para comparação.</div>
+      </div>
+    </div>
   </div>
 
 <script>
 /* =====================  INTERNACIONALIZAÇÃO  ===================== */
 const TRANSLATIONS = {
   pt: {
-    title: "Radar de Lúpulos – Visualização & Comparação",
+    main_title: "Radar de Cervejaria – Visualização & Comparação",
+    menu_hop_radar: "Radar de Lúpulos",
+    menu_yeast_radar: "Radar de Leveduras",
     subtitle: "Selecione um lúpulo para o <b>lado esquerdo</b> (azul) e, opcionalmente, outro para o <b>lado direito</b> (magenta). Passe o mouse no gráfico para ver os valores.",
     warning: "⚠️ se algum item não estiver incluido na lista ou estiver incorreto, envie um email para reisraff@gmail.com",
     controls: "Controles",
@@ -278,9 +397,45 @@ const TRANSLATIONS = {
     chemical_footnote: "Comparação dos níveis de ácidos alfa, ácidos beta e óleos essenciais totais.",
     compounds_title: "Compostos Aromáticos",
     compounds_footnote: "Comparação dos compostos aromáticos: Mirceno, Humuleno, Cariofileno, Farneseno, Linalol, Geraniol e Polifenóis.",
-    legend_percent: "% / ml/100g"
+    legend_percent: "% / ml/100g",
+    // Yeast translations
+    left_label_yeast: "Lado Esquerdo (Azul)",
+    right_label_yeast: "Lado Direito (Magenta)",
+    filter_label_yeast: "Filtro rápido (por nome, país ou tipo)",
+    filter_placeholder_yeast: "Ex.: Ale, Lager, US-05...",
+    left_selector_label_yeast: "Selecionar Levedura",
+    right_selector_label_yeast: "Selecionar Levedura",
+    hint_yeast: "Dica: use o filtro para reduzir a lista por país (ex.: <i>US</i>, <i>DE</i>, <i>GB</i>) ou por um tipo (ex.: <i>Ale</i>, <i>Lager</i>).",
+    hint_right_yeast: "Opcional: selecione uma segunda levedura para comparação.",
+    tab_yeast_aroma: "Perfil de Fermentação",
+    tab_yeast_specs: "Especificações",
+    yeast_chart_title: "Gráfico em Teia",
+    yeast_specs_title: "Especificações",
+    yeast_footnote: "As pontas representam as características: Frutal, Floral, Picante, Fenol, Ester, Limpo, Cremoso, Mineral, Alcoólico, Acidez, Complexo, Selva, Terroso, Doce.",
+    yeast_specs_footnote: "Comparação de tolerância ao álcool e faixa de temperatura ideal.",
+    select_left_yeast: "— escolher —",
+    select_right_yeast: "— (opcional) —",
+    select_yeast: "Selecione uma levedura para popular os detalhes.",
+    yeast_name: "Nome:",
+    yeast_country: "País:",
+    yeast_types: "Tipos:",
+    yeast_abv: "Tolerância ABV:",
+    yeast_temp: "Temperatura:",
+    yeast_source: "Fonte:",
+    yeast_title: "Radar de Leveduras",
+    yeast_subtitle: "Selecione uma levedura para o <b>lado esquerdo</b> (azul) e, opcionalmente, outra para o <b>lado direito</b> (magenta). Passe o mouse no gráfico para ver os valores.",
+    
+    // Aroma labels
+    aroma_labels: ["Chá", "Cítrico", "Verde", "Caramelado", "Amadeirado", "Picante", "Mentolado", "Herbal", "Vegetal", "Floral", "Fruta Verde", "Fruta Vermelha", "Fruta Amarela", "Fruta Doce"],
+    yeast_aroma_labels: ["Frutal", "Floral", "Picante", "Fenol", "Ester", "Limpo", "Cremoso", "Mineral", "Alcoólico", "Acidez", "Complexo", "Selva", "Terroso", "Doce"],
+    chemical_labels: ["Ácidos Alfa (%)", "Ácidos Beta (%)", "Óleos Essenciais (ml/100g)"],
+    compounds_labels: ["Mirceno (%)", "Humuleno (%)", "Cariofileno (%)", "Farneseno (%)", "Linalol (%)", "Geraniol (%)", "Polifenóis (%)"],
+    yeast_specs_labels: ["Tolerância ABV (%)", "Temp. Mínima (°C)", "Temp. Máxima (°C)"]
   },
   en: {
+    main_title: "Brewery Radar – Visualization & Comparison",
+    menu_hop_radar: "Hop Radar",
+    menu_yeast_radar: "Yeast Radar",
     title: "Hop Radar – Visualization & Comparison",
     subtitle: "Select a hop for the <b>left side</b> (blue) and optionally another for the <b>right side</b> (magenta). Hover over the chart to see values.",
     warning: "⚠️ If any item is not included in the list or is incorrect, send an email to reisraff@gmail.com",
@@ -312,9 +467,46 @@ const TRANSLATIONS = {
     chemical_footnote: "Comparison of alpha acid, beta acid and total essential oil levels.",
     compounds_title: "Aromatic Compounds",
     compounds_footnote: "Comparison of aromatic compounds: Myrcene, Humulene, Caryophyllene, Farnesene, Linalool, Geraniol and Polyphenols.",
-    legend_percent: "% / ml/100g"
+    legend_percent: "% / ml/100g",
+    
+    // Yeast translations
+    left_label_yeast: "Left Side (Blue)",
+    right_label_yeast: "Right Side (Magenta)",
+    filter_label_yeast: "Quick filter (by name, country or type)",
+    filter_placeholder_yeast: "Ex.: Ale, Lager, US-05...",
+    left_selector_label_yeast: "Select Yeast",
+    right_selector_label_yeast: "Select Yeast",
+    hint_yeast: "Tip: use the filter to narrow the list by country (ex.: <i>US</i>, <i>DE</i>, <i>GB</i>) or by type (ex.: <i>Ale</i>, <i>Lager</i>).",
+    hint_right_yeast: "Optional: select a second yeast for comparison.",
+    tab_yeast_aroma: "Fermentation Profile",
+    tab_yeast_specs: "Specifications",
+    yeast_chart_title: "Radar Chart",
+    yeast_specs_title: "Specifications",
+    yeast_footnote: "The points represent characteristics: Fruity, Floral, Spicy, Phenol, Ester, Clean, Creamy, Mineral, Alcoholic, Acidity, Complex, Wild, Earthy, Sweet.",
+    yeast_specs_footnote: "Comparison of alcohol tolerance and ideal temperature range.",
+    select_left_yeast: "— choose —",
+    select_right_yeast: "— (optional) —",
+    select_yeast: "Select a yeast to populate details.",
+    yeast_name: "Name:",
+    yeast_country: "Country:",
+    yeast_types: "Types:",
+    yeast_abv: "ABV Tolerance:",
+    yeast_temp: "Temperature:",
+    yeast_source: "Source:",
+    yeast_title: "Yeast Radar",
+    yeast_subtitle: "Select a yeast for the <b>left side</b> (blue) and optionally another for the <b>right side</b> (magenta). Hover over the chart to see values.",
+    
+    // Aroma labels
+    aroma_labels: ["Tea", "Citrus", "Green", "Caramel", "Woody", "Spicy", "Menthol", "Herbal", "Vegetal", "Floral", "Green Fruit", "Red Fruit", "Yellow Fruit", "Sweet Fruit"],
+    yeast_aroma_labels: ["Fruity", "Floral", "Spicy", "Phenol", "Ester", "Clean", "Creamy", "Mineral", "Alcoholic", "Acidity", "Complex", "Wild", "Earthy", "Sweet"],
+    chemical_labels: ["Alpha Acids (%)", "Beta Acids (%)", "Essential Oils (ml/100g)"],
+    compounds_labels: ["Myrcene (%)", "Humulene (%)", "Caryophyllene (%)", "Farnesene (%)", "Linalool (%)", "Geraniol (%)", "Polyphenols (%)"],
+    yeast_specs_labels: ["ABV Tolerance (%)", "Min. Temp (°C)", "Max. Temp (°C)"]
   },
   es: {
+    main_title: "Radar de Cervecería – Visualización y Comparación",
+    menu_hop_radar: "Radar de Lúpulos",
+    menu_yeast_radar: "Radar de Levaduras",
     title: "Radar de Lúpulos – Visualización y Comparación",
     subtitle: "Selecciona un lúpulo para el <b>lado izquierdo</b> (azul) y opcionalmente otro para el <b>lado derecho</b> (magenta). Pasa el mouse sobre el gráfico para ver los valores.",
     warning: "⚠️ Si algún elemento no está incluido en la lista o es incorrecto, envía un email a reisraff@gmail.com",
@@ -346,7 +538,41 @@ const TRANSLATIONS = {
     chemical_footnote: "Comparación de los niveles de ácidos alfa, ácidos beta y aceites esenciales totales.",
     compounds_title: "Compuestos Aromáticos",
     compounds_footnote: "Comparación de compuestos aromáticos: Mirceno, Humuleno, Cariofileno, Farneseno, Linalol, Geraniol y Polifenoles.",
-    legend_percent: "% / ml/100g"
+    legend_percent: "% / ml/100g",
+    
+    // Yeast translations
+    left_label_yeast: "Lado Izquierdo (Azul)",
+    right_label_yeast: "Lado Derecho (Magenta)",
+    filter_label_yeast: "Filtro rápido (por nombre, país o tipo)",
+    filter_placeholder_yeast: "Ej.: Ale, Lager, US-05...",
+    left_selector_label_yeast: "Seleccionar Levadura",
+    right_selector_label_yeast: "Seleccionar Levadura",
+    hint_yeast: "Consejo: usa el filtro para reducir la lista por país (ej.: <i>US</i>, <i>DE</i>, <i>GB</i>) o por tipo (ej.: <i>Ale</i>, <i>Lager</i>).",
+    hint_right_yeast: "Opcional: selecciona una segunda levadura para comparación.",
+    tab_yeast_aroma: "Perfil de Fermentación",
+    tab_yeast_specs: "Especificaciones",
+    yeast_chart_title: "Gráfico Radial",
+    yeast_specs_title: "Especificaciones",
+    yeast_footnote: "Los puntos representan las características: Frutal, Floral, Picante, Fenol, Ester, Limpio, Cremoso, Mineral, Alcohólico, Acidez, Complejo, Selva, Terroso, Dulce.",
+    yeast_specs_footnote: "Comparación de tolerancia al alcohol y rango de temperatura ideal.",
+    select_left_yeast: "— elegir —",
+    select_right_yeast: "— (opcional) —",
+    select_yeast: "Selecciona una levadura para mostrar detalles.",
+    yeast_name: "Nombre:",
+    yeast_country: "País:",
+    yeast_types: "Tipos:",
+    yeast_abv: "Tolerancia ABV:",
+    yeast_temp: "Temperatura:",
+    yeast_source: "Fuente:",
+    yeast_title: "Radar de Levaduras",
+    yeast_subtitle: "Selecciona una levadura para el <b>lado izquierdo</b> (azul) y opcionalmente otra para el <b>lado derecho</b> (magenta). Pasa el mouse sobre el gráfico para ver los valores.",
+    
+    // Aroma labels
+    aroma_labels: ["Té", "Cítrico", "Verde", "Caramelo", "Amaderado", "Picante", "Mentol", "Herbal", "Vegetal", "Floral", "Fruta Verde", "Fruta Roja", "Fruta Amarilla", "Fruta Dulce"],
+    yeast_aroma_labels: ["Frutal", "Floral", "Picante", "Fenol", "Ester", "Limpio", "Cremoso", "Mineral", "Alcohólico", "Acidez", "Complejo", "Selva", "Terroso", "Dulce"],
+    chemical_labels: ["Ácidos Alfa (%)", "Ácidos Beta (%)", "Aceites Esenciales (ml/100g)"],
+    compounds_labels: ["Mirceno (%)", "Humuleno (%)", "Cariofileno (%)", "Farneseno (%)", "Linalol (%)", "Geraniol (%)", "Polifenoles (%)"],
+    yeast_specs_labels: ["Tolerancia ABV (%)", "Temp. Mínima (°C)", "Temp. Máxima (°C)"]
   }
 };
 
@@ -414,6 +640,51 @@ Cascade Patagonia,AR,3,8,4,2,2,3,1,4,3,7,5,2,6,3,"APA, IPA",4.0,9.0,5.5,9.0,0.5,
 Nugget Patagonia,AR,4,5,4,3,4,6,2,6,3,6,3,2,4,3,"IPA, Stout",11.0,14.0,4.0,6.0,1.5,2.0,45.0,55.0,18.0,25.0,8.0,12.0,,,,,,,,
 `;
 
+const yeastCSV = `Levedura,País,Frutal,Floral,Picante,Fenol,Ester,Limpo,Cremoso,Mineral,Alcoólico,Acidez,Complexo,Selva,Terroso,Doce,Tipos,ABV_Tolerance,Temp_Range,Fonte
+Safale US-05,US,2,2,1,1,2,9,3,2,6,1,3,1,2,2,"APA, IPA, Pale Ale","9-11%","18-26°C","fermentis.com"
+Safale S-04,GB,5,4,2,2,3,6,6,3,5,2,5,2,3,4,"ESB, Bitter, Mild","9-11%","18-22°C","fermentis.com"
+Saflager W-34/70,DE,2,1,1,1,2,9,3,4,7,1,3,1,2,2,"Lager, Pilsner","9-11%","9-22°C","fermentis.com"
+Wyeast 1056 American Ale,US,3,2,1,1,2,8,4,2,6,1,4,1,2,3,"APA, IPA, Amber","11%","15-24°C","wyeastlab.com"
+Wyeast 1968 London ESB,GB,4,5,2,2,5,5,6,3,5,3,6,2,3,5,"ESB, Bitter, Porter","9%","18-22°C","wyeastlab.com"
+Wyeast 2124 Bohemian Lager,CZ,2,2,2,1,3,8,4,5,6,2,4,2,2,3,"Pilsner, Lager","9%","8-14°C","wyeastlab.com"
+Wyeast 3787 Trappist High Gravity,BE,6,5,4,8,8,4,4,3,8,3,8,2,4,5,"Belgian Strong, Dubbel","12%","18-24°C","wyeastlab.com"
+Wyeast 3944 Belgian Witbier,BE,5,6,3,7,4,5,5,2,5,4,6,1,2,6,"Witbier, Hefeweizen","11%","18-24°C","wyeastlab.com"
+Saison Dupont (3724/565),BE,4,5,7,8,5,5,4,3,7,4,8,3,4,4,"Saison, Farmhouse","10-12%","20-30°C","dupont.com"
+Brettanomyces Bruxellensis,BE,3,3,2,9,3,3,3,4,8,6,9,9,8,2,"Sour, Wild Ale","14-15%","15-28°C","milkthistlerecords/brett-reference"
+Lactobacillus,Various,1,1,0,0,0,1,1,2,0,10,3,3,2,1,"Sour, Berliner Weisse","0%","20-40°C","lallemandbrewing.com"
+WLP001 California Ale,US,2,2,1,1,2,9,3,2,6,1,3,1,2,3,"APA, IPA, Cream Ale","11-12%","18-21°C","whitelabs.com"
+WLP002 English Ale,GB,5,5,2,2,5,5,7,3,5,2,6,2,3,6,"ESB, Porter, Stout","10%","18-20°C","whitelabs.com"
+WLP029 German Ale/Kölsch,DE,2,2,1,1,2,8,5,3,5,2,4,1,2,3,"Kölsch, Alt, Wheat","9-10%","18-21°C","whitelabs.com"
+WLP300 Hefeweizen Ale,DE,7,6,3,8,8,4,5,2,4,2,6,1,2,7,"Hefeweizen, Wheat","10%","17-22°C","whitelabs.com"
+WLP510 Bastogne Belgian Ale,BE,5,4,3,4,6,5,4,3,8,3,7,2,3,5,"Belgian Pale, Abbey","15%","18-24°C","whitelabs.com"
+WLP565 Belgian Saison I,BE,4,5,6,8,5,5,4,3,7,4,8,3,4,4,"Saison, Farmhouse","12%","20-30°C","whitelabs.com"
+WLP644 Saccharomyces Trois,BE,7,4,3,2,4,6,4,3,7,4,7,3,3,4,"Brett IPA, Wild Ale","12%","18-24°C","whitelabs.com"
+WLP775 English Cider Yeast,GB,6,3,1,1,2,7,3,2,6,3,5,1,2,5,"Cider, Perry","12%","20-24°C","whitelabs.com"
+EC-1118 Champagne Yeast,FR,2,2,0,0,1,9,2,3,10,1,3,1,1,1,"Mead, High ABV","18%","10-30°C","lallemandbrewing.com"
+SafAle WB-06,DE,6,6,2,8,7,3,4,2,5,2,6,2,3,6,"Weissbier, Wheat","9-11%","18-24°C","fermentis.com"
+SafAle BE-256,BE,5,4,3,6,7,4,4,3,9,3,7,2,3,5,"Belgian Strong, Abbey","9-11%","15-20°C","fermentis.com"
+SafAle S-33,BE,6,5,2,2,6,5,4,2,6,2,5,2,2,5,"English Ales, Pale","9-11%","15-24°C","fermentis.com"
+SafLager S-23,DE,3,4,1,1,3,7,4,3,7,2,4,1,2,3,"Lager, Export","9-11%","9-15°C","fermentis.com"
+SafAle K-97,DE,4,5,2,3,5,6,5,3,6,2,5,2,2,4,"Kölsch, Wheat","9-11%","12-22°C","fermentis.com"
+SafLager S-189,CH,2,2,1,1,2,9,4,4,7,1,3,1,2,2,"Lager, Bock","9-11%","9-22°C","fermentis.com"
+SafAle W-68,DE,7,6,2,8,8,3,4,2,6,2,6,2,3,6,"Weizen, Weissbier","9-11%","17-24°C","fermentis.com"
+SafAle BW-20,BE,5,6,2,7,6,4,4,2,6,3,6,2,3,5,"Belgian Wit","9-11%","18-24°C","fermentis.com"
+SafBrew BR-8,BE,3,3,2,9,3,3,3,4,8,6,9,8,8,2,"Brett Ale, Mixed","12-14%","15-28°C","fermentis.com"
+SafAle BE-134,BE,4,5,7,8,5,4,4,3,7,4,7,3,3,4,"Saison, Farmhouse","11%","18-28°C","fermentis.com"
+SafBrew DA-16,FR,3,3,2,2,5,6,3,3,10,3,6,2,3,4,"High ABV Ales","15-18%","20-32°C","fermentis.com"
+SafBrew LA-01,FR,1,1,0,0,1,8,2,2,1,2,3,1,1,1,"Low/No Alcohol","<1%","20-25°C","fermentis.com"
+SafBrew HA-18,FR,4,3,3,4,6,5,3,3,10,4,7,3,4,5,"High Gravity Ales",">15%","18-30°C","fermentis.com"
+WLP004 Irish Ale,IE,4,3,2,2,5,6,5,3,6,2,6,2,3,5,"Irish Red, Stout","12%","18-20°C","whitelabs.com"
+WLP005 British Ale,GB,5,4,2,2,5,6,6,3,6,2,6,2,3,5,"Bitter, Mild","10%","18-21°C","whitelabs.com"
+WLP007 Dry English Ale,GB,4,3,2,2,4,7,4,3,6,2,5,2,2,4,"Porter, Pale Ale","12%","18-21°C","whitelabs.com"
+WLP013 London Ale,GB,4,4,3,3,5,6,5,3,6,3,6,2,3,5,"Porter, Pale Ale","11%","18-20°C","whitelabs.com"
+WLP023 Burton Ale,GB,5,4,3,3,6,6,5,3,7,3,7,2,3,5,"Burton Ale, Strong","12%","18-21°C","whitelabs.com"
+WLP028 Edinburgh Scottish Ale,GB,4,3,3,3,5,6,5,3,6,3,6,2,3,5,"Scottish Ale","12%","18-20°C","whitelabs.com"
+WLP090 San Diego Super,US,3,2,1,1,2,9,3,2,6,1,3,1,2,3,"IPA, APA","12%","18-21°C","whitelabs.com"
+WLP099 Super High Gravity,US,3,2,2,2,4,5,3,3,10,3,6,2,3,3,"Barleywine, Extreme ABV","20%","20-30°C","whitelabs.com"
+SafLager NovaLager (NL-01),DK,2,2,1,1,2,9,4,3,7,1,4,1,2,2,"Lager, Pilsner, IPL","13%","10-20°C","fermentis.com"
+`;
+
 /* =====================  Utilidades  ===================== */
 // Mapa de países para códigos ISO dos flags
 const COUNTRY_FLAGS = {
@@ -462,6 +733,30 @@ const ATTR_ICONS = {
 
 // Versões com ícones dos atributos
 const ATTRS_WITH_ICONS = ATTRS.map(attr => `${ATTR_ICONS[attr]} ${attr}`);
+
+// Yeast attributes
+const YEAST_ATTRS = ["Frutal","Floral","Picante","Fenol","Ester","Limpo","Cremoso","Mineral","Alcoólico","Acidez","Complexo","Selva","Terroso","Doce"];
+
+// Mapeamento de ícones para características de levedura
+const YEAST_ATTR_ICONS = {
+  "Frutal": "🍎",
+  "Floral": "🌸",
+  "Picante": "🌶️",
+  "Fenol": "⚗️",
+  "Ester": "🧪",
+  "Limpo": "✨",
+  "Cremoso": "🥛",
+  "Mineral": "⛰️",
+  "Alcoólico": "🍺",
+  "Acidez": "🍋",
+  "Complexo": "🧩",
+  "Selva": "🌿",
+  "Terroso": "🌍",
+  "Doce": "🍯"
+};
+
+// Versões com ícones dos atributos de levedura
+const YEAST_ATTRS_WITH_ICONS = YEAST_ATTRS.map(attr => `${YEAST_ATTR_ICONS[attr]} ${attr}`);
 function parseCSV(text){
   // parse simples, suficiente para este CSV (aspas apenas em Estilos)
   const lines = text.trim().split(/\r?\n/);
@@ -489,10 +784,41 @@ function parseCSV(text){
     return obj;
   });
 }
-const DATA = parseCSV(csv);
 
-// mapa para lookup rápido
+function parseYeastCSV(text){
+  // parse simples, suficiente para este CSV (aspas apenas em Tipos)
+  const lines = text.trim().split(/\r?\n/);
+  const headers = lines.shift().split(",");
+  return lines.map(line=>{
+    // separa por vírgula, respeitando campo final possivelmente com vírgulas dentro de aspas
+    const parts = [];
+    let cur = "", inQuotes=false;
+    for (let i=0;i<line.length;i++){
+      const ch=line[i];
+      if(ch === '"' ){ inQuotes = !inQuotes; continue; }
+      if(ch === ',' && !inQuotes){ parts.push(cur); cur=""; }
+      else cur += ch;
+    }
+    parts.push(cur);
+    const obj = {};
+    headers.forEach((h,idx)=> obj[h.trim()] = parts[idx]?.trim() ?? "");
+    // números para atributos
+    YEAST_ATTRS.forEach(a=> obj[a] = Number(obj[a]));
+    // tipos em array
+    obj.Tipos = (obj.Tipos||"").split(",").map(s=>s.trim()).filter(Boolean);
+    // normaliza campos nome/país
+    obj.nome = obj["Levedura"];
+    obj.pais = obj["País"];
+    return obj;
+  });
+}
+
+const DATA = parseCSV(csv);
+const YEAST_DATA = parseYeastCSV(yeastCSV);
+
+// mapas para lookup rápido
 const byName = new Map(DATA.map(d=>[d.nome, d]));
+const yeastByName = new Map(YEAST_DATA.map(d=>[d.nome, d]));
 
 /* =====================  DOM  ===================== */
 const leftSel  = document.getElementById('leftSel');
@@ -509,6 +835,20 @@ const leftLegendChem = document.getElementById('leftLegendChem');
 const rightLegendChem = document.getElementById('rightLegendChem');
 const leftLegendCompounds = document.getElementById('leftLegendCompounds');
 const rightLegendCompounds = document.getElementById('rightLegendCompounds');
+
+// Yeast DOM elements
+const leftSelYeast  = document.getElementById('leftSelYeast');
+const rightSelYeast = document.getElementById('rightSelYeast');
+const qInputYeast   = document.getElementById('qYeast');
+const q2InputYeast  = document.getElementById('q2Yeast');
+const leftMetaYeast = document.getElementById('leftMetaYeast');
+const rightMetaYeast= document.getElementById('rightMetaYeast');
+const leftPillYeast = document.getElementById('leftPillYeast');
+const rightPillYeast = document.getElementById('rightPillYeast');
+const leftLegendYeast = document.getElementById('leftLegendYeast');
+const rightLegendYeast = document.getElementById('rightLegendYeast');
+const leftLegendYeastSpecs = document.getElementById('leftLegendYeastSpecs');
+const rightLegendYeastSpecs = document.getElementById('rightLegendYeastSpecs');
 
 function formatStyles(arr){ return arr.map(s=>`<span class="tag">${s}</span>`).join(" "); }
 function renderMeta(side, hop){
@@ -542,6 +882,60 @@ function fillSelects(list){
   fillRightSelect(list);
 }
 
+// Yeast functions
+function renderYeastMeta(side, yeast){
+  const t = TRANSLATIONS[currentLang];
+  const html = yeast ? `
+    <div><b>${t.yeast_name}</b> ${yeast.nome}</div>
+    <div><b>${t.yeast_country}</b> ${yeast.pais}${createFlagElement(yeast.pais)}</div>
+    <div><b>${t.yeast_types}</b><div class="styles">${formatStyles(yeast.Tipos)}</div></div>
+    <div><b>${t.yeast_abv}</b> ${yeast.ABV_Tolerance}</div>
+    <div><b>${t.yeast_temp}</b> ${yeast.Temp_Range}</div>
+    <div><b>${t.yeast_source}</b> ${yeast.Fonte}</div>
+  ` : `<div style="color:#7f89b4">${t.select_yeast}</div>`;
+  (side==='left'?leftMetaYeast:rightMetaYeast).innerHTML = html;
+}
+
+let leftYeastOptionsList = [...YEAST_DATA];
+let rightYeastOptionsList = [...YEAST_DATA];
+
+function fillLeftSelectYeast(list){
+  const t = TRANSLATIONS[currentLang];
+  const opts = list.map(d=>`<option value="${d.nome}">${d.nome} (${d.pais})</option>`).join("");
+  leftSelYeast.innerHTML  = `<option value="">${t.select_left_yeast}</option>` + opts;
+}
+
+function fillRightSelectYeast(list){
+  const t = TRANSLATIONS[currentLang];
+  const opts = list.map(d=>`<option value="${d.nome}">${d.nome} (${d.pais})</option>`).join("");
+  rightSelYeast.innerHTML = `<option value="">${t.select_right_yeast}</option>` + opts;
+}
+
+function fillYeastSelects(list){
+  fillLeftSelectYeast(list);
+  fillRightSelectYeast(list);
+}
+
+function applyLeftYeastFilter(){
+  const q = qInputYeast.value.trim().toLowerCase();
+  if(!q){ leftYeastOptionsList = [...YEAST_DATA]; fillLeftSelectYeast(leftYeastOptionsList); return; }
+  leftYeastOptionsList = YEAST_DATA.filter(d=>{
+    const hay = [d.nome, d.pais, ...(d.Tipos||[])].join(" ").toLowerCase();
+    return hay.includes(q);
+  });
+  fillLeftSelectYeast(leftYeastOptionsList);
+}
+
+function applyRightYeastFilter(){
+  const q = q2InputYeast.value.trim().toLowerCase();
+  if(!q){ rightYeastOptionsList = [...YEAST_DATA]; fillRightSelectYeast(rightYeastOptionsList); return; }
+  rightYeastOptionsList = YEAST_DATA.filter(d=>{
+    const hay = [d.nome, d.pais, ...(d.Tipos||[])].join(" ").toLowerCase();
+    return hay.includes(q);
+  });
+  fillRightSelectYeast(rightYeastOptionsList);
+}
+
 /* filtro de busca esquerdo */
 function applyLeftFilter(){
   const q = qInput.value.trim().toLowerCase();
@@ -566,6 +960,10 @@ function applyRightFilter(){
 
 qInput.addEventListener('input', applyLeftFilter);
 q2Input.addEventListener('input', applyRightFilter);
+
+// Yeast filter event listeners
+qInputYeast.addEventListener('input', applyLeftYeastFilter);
+q2InputYeast.addEventListener('input', applyRightYeastFilter);
 
 /* =====================  CHART (Radar)  ===================== */
 const ctx = document.getElementById('radar').getContext('2d');
@@ -738,6 +1136,123 @@ const compoundsChart = new Chart(compoundsCtx, {
   }
 });
 
+/* =====================  YEAST CHARTS  ===================== */
+const yeastCtx = document.getElementById('yeastRadar').getContext('2d');
+
+const yeastRadar = new Chart(yeastCtx, {
+  type: 'radar',
+  data: {
+    labels: YEAST_ATTRS_WITH_ICONS,
+    datasets: [
+      {
+        label: '',
+        data: [], // preenchido ao selecionar
+        backgroundColor: 'rgba(76,141,246,0.22)',
+        borderColor: 'rgba(76,141,246,1)',
+        pointBackgroundColor: 'rgba(76,141,246,1)',
+        pointRadius: 3,
+        borderWidth: 2,
+        order: 1
+      },
+      {
+        label: '',
+        data: [],
+        backgroundColor: 'rgba(230,91,183,0.22)',
+        borderColor: 'rgba(230,91,183,1)',
+        pointBackgroundColor: 'rgba(230,91,183,1)',
+        pointRadius: 3,
+        borderWidth: 2,
+        order: 2
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      r: {
+        min: 0, max: 10, ticks: { stepSize: 2, showLabelBackdrop:false, color:'#aeb7da' },
+        grid: { color: gridColor },
+        angleLines: { color: gridColor },
+        pointLabels: {
+          color: '#dfe6ff',
+          font: { size: 11, weight: 500, family: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple Color Emoji", "Segoe UI Emoji", sans-serif' }
+        }
+      }
+    },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          title: (ctx)=> ctx[0].label,
+          label: (ctx)=> `${ctx.dataset.label}: ${ctx.formattedValue}`
+        }
+      }
+    },
+    elements: {
+      line: { tension: 0.25 }
+    },
+    animation: { duration: 350 }
+  }
+});
+
+/* =====================  YEAST SPECS CHART (Bar)  ===================== */
+const yeastSpecsCtx = document.getElementById('yeastSpecsChart').getContext('2d');
+
+const yeastSpecsChart = new Chart(yeastSpecsCtx, {
+  type: 'bar',
+  data: {
+    labels: ['Tolerância ABV (%)', 'Temp. Mínima (°C)', 'Temp. Máxima (°C)'],
+    datasets: [
+      {
+        label: '',
+        data: [0, 0, 0],
+        backgroundColor: 'rgba(76,141,246,0.7)',
+        borderColor: 'rgba(76,141,246,1)',
+        borderWidth: 2,
+        maxBarThickness: 60
+      },
+      {
+        label: '',
+        data: [0, 0, 0],
+        backgroundColor: 'rgba(230,91,183,0.7)',
+        borderColor: 'rgba(230,91,183,1)',
+        borderWidth: 2,
+        maxBarThickness: 60
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      x: {
+        ticks: { color: '#dfe6ff', font: { size: 11 } },
+        grid: { color: gridColor }
+      },
+      y: {
+        ticks: { color: '#aeb7da', font: { size: 11 } },
+        grid: { color: gridColor },
+        beginAtZero: true
+      }
+    },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          title: (ctx) => ctx[0].label,
+          label: (ctx) => {
+            const value = ctx.formattedValue;
+            const unit = ctx.label.includes('°C') ? '°C' : '%';
+            return `${ctx.dataset.label}: ${value}${unit}`;
+          }
+        }
+      }
+    },
+    animation: { duration: 350 }
+  }
+});
+
 /* helpers para extrair vetor de atributos */
 function vector(hop){
   return ATTRS.map(a => hop[a] ?? 0);
@@ -791,6 +1306,45 @@ function getCompoundsData(hop) {
   const polyphenols = polyphenolsMin && polyphenolsMax ? (polyphenolsMin + polyphenolsMax) / 2 : (polyphenolsMin || polyphenolsMax || 0);
   
   return [myrcene, humulene, caryophyllene, farnesene, linalool, geraniol, polyphenols];
+}
+
+/* helpers para extrair vetor de atributos de levedura */
+function yeastVector(yeast){
+  return YEAST_ATTRS.map(a => yeast[a] ?? 0);
+}
+
+/* helpers para extrair dados de especificações de levedura */
+function getYeastSpecsData(yeast) {
+  if (!yeast) return [0, 0, 0];
+  
+  // Parse ABV tolerance
+  let abv = 0;
+  if (yeast.ABV_Tolerance) {
+    const abvStr = yeast.ABV_Tolerance.replace('%', '');
+    if (abvStr.includes('-')) {
+      const [min, max] = abvStr.split('-').map(s => parseFloat(s.trim()));
+      abv = (min + max) / 2;
+    } else if (abvStr.startsWith('<')) {
+      abv = parseFloat(abvStr.substring(1));
+    } else if (abvStr.startsWith('>')) {
+      abv = parseFloat(abvStr.substring(1));
+    } else {
+      abv = parseFloat(abvStr);
+    }
+  }
+  
+  // Parse temperature range
+  let tempMin = 0, tempMax = 0;
+  if (yeast.Temp_Range) {
+    const tempStr = yeast.Temp_Range.replace(/°C/g, '');
+    if (tempStr.includes('-')) {
+      const [min, max] = tempStr.split('-').map(s => parseFloat(s.trim()));
+      tempMin = min || 0;
+      tempMax = max || 0;
+    }
+  }
+  
+  return [abv, tempMin, tempMax];
 }
 
 /* atualiza gráfico e metadados */
@@ -850,13 +1404,61 @@ function update(){
   compoundsChart.update();
 }
 
+/* atualiza gráfico e metadados de leveduras */
+function updateYeast(){
+  const leftName  = leftSelYeast.value;
+  const rightName = rightSelYeast.value;
+
+  const left  = yeastByName.get(leftName);
+  const right = yeastByName.get(rightName);
+
+  // Atualizar os dados do gráfico radar de levedura
+  yeastRadar.data.datasets[0].data = left  ? yeastVector(left)  : [];
+  yeastRadar.data.datasets[1].data = right ? yeastVector(right) : [];
+
+  // Atualizar os labels dos datasets do radar com os nomes das leveduras
+  yeastRadar.data.datasets[0].label = left ? left.nome : '';
+  yeastRadar.data.datasets[1].label = right ? right.nome : '';
+
+  // Atualizar os dados do gráfico de especificações de levedura
+  yeastSpecsChart.data.datasets[0].data = left ? getYeastSpecsData(left) : [0, 0, 0];
+  yeastSpecsChart.data.datasets[1].data = right ? getYeastSpecsData(right) : [0, 0, 0];
+  
+  // Atualizar os labels dos datasets do gráfico de especificações
+  yeastSpecsChart.data.datasets[0].label = left ? left.nome : '';
+  yeastSpecsChart.data.datasets[1].label = right ? right.nome : '';
+
+  // Atualizar pills com os nomes das leveduras
+  const t = TRANSLATIONS[currentLang];
+  leftPillYeast.textContent = left ? left.nome : t.left_pill;
+  rightPillYeast.textContent = right ? right.nome : t.right_pill;
+
+  // Atualizar legendas do gráfico radar com os nomes das leveduras ou texto padrão
+  leftLegendYeast.textContent = left ? left.nome : t.legend_left;
+  rightLegendYeast.textContent = right ? right.nome : t.legend_right;
+
+  // Atualizar legendas do gráfico de especificações com os nomes das leveduras ou texto padrão
+  leftLegendYeastSpecs.textContent = left ? left.nome : t.legend_left;
+  rightLegendYeastSpecs.textContent = right ? right.nome : t.legend_right;
+
+  renderYeastMeta('left', left);
+  renderYeastMeta('right', right);
+
+  yeastRadar.update();
+  yeastSpecsChart.update();
+}
+
 /* =====================  INTERNACIONALIZAÇÃO - FUNÇÕES  ===================== */
 function updateTexts() {
   const t = TRANSLATIONS[currentLang];
   
-  // Preserva as seleções atuais
+  // Preserva as seleções atuais - Hop
   const currentLeftSelection = leftSel.value;
   const currentRightSelection = rightSel.value;
+  
+  // Preserva as seleções atuais - Yeast
+  const currentLeftYeastSelection = leftSelYeast.value;
+  const currentRightYeastSelection = rightSelYeast.value;
   
   // Atualiza todos os elementos com data-i18n
   document.querySelectorAll('[data-i18n]').forEach(el => {
@@ -874,15 +1476,59 @@ function updateTexts() {
     }
   });
   
-  // Recarrega selects e metadados, preservando filtros atuais
+  // Recarrega selects e metadados hop, preservando filtros atuais
   fillLeftSelect(leftOptionsList);
   fillRightSelect(rightOptionsList);
   
-  // Restaura as seleções
+  // Recarrega selects e metadados yeast, preservando filtros atuais
+  fillLeftSelectYeast(leftYeastOptionsList);
+  fillRightSelectYeast(rightYeastOptionsList);
+  
+  // Restaura as seleções - Hop
   leftSel.value = currentLeftSelection;
   rightSel.value = currentRightSelection;
   
-  update();
+  // Restaura as seleções - Yeast
+  leftSelYeast.value = currentLeftYeastSelection;
+  rightSelYeast.value = currentRightYeastSelection;
+  
+  // Atualizar labels dos gráficos
+  updateChartLabels();
+  
+  // Update current tool
+  if (currentTool === 'hop') {
+    update();
+  } else if (currentTool === 'yeast') {
+    updateYeast();
+  }
+}
+
+function updateChartLabels() {
+  const t = TRANSLATIONS[currentLang];
+  
+  // Atualizar labels do radar de lúpulos com ícones
+  const aromaLabelsWithIcons = t.aroma_labels.map((label, index) => `${Object.values(ATTR_ICONS)[index]} ${label}`);
+  radar.data.labels = aromaLabelsWithIcons;
+  
+  // Atualizar labels do gráfico químico
+  chemicalChart.data.labels = t.chemical_labels;
+  
+  // Atualizar labels do gráfico de compostos
+  compoundsChart.data.labels = t.compounds_labels;
+  
+  // Atualizar labels do radar de leveduras com ícones
+  const yeastLabelsWithIcons = t.yeast_aroma_labels.map((label, index) => `${Object.values(YEAST_ATTR_ICONS)[index]} ${label}`);
+  yeastRadar.data.labels = yeastLabelsWithIcons;
+  
+  // Atualizar labels do gráfico de especificações de levedura
+  yeastSpecsChart.data.labels = t.yeast_specs_labels;
+  
+  // Atualizar os gráficos para refletir as mudanças
+  radar.update();
+  chemicalChart.update();
+  compoundsChart.update();
+  yeastRadar.update();
+  yeastSpecsChart.update();
 }
 
 function switchLanguage(lang) {
@@ -895,6 +1541,31 @@ function switchLanguage(lang) {
   });
   
   updateTexts();
+}
+
+/* =====================  SISTEMA DE MENU PRINCIPAL  ===================== */
+let currentTool = 'hop'; // Default tool
+
+function switchTool(toolName) {
+  currentTool = toolName;
+  
+  // Atualizar botões do menu principal
+  document.querySelectorAll('.menu-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tool === toolName);
+  });
+  
+  // Atualizar seções das ferramentas
+  document.querySelectorAll('.tool-section').forEach(section => {
+    section.classList.toggle('active', section.id === `${toolName}-tool`);
+  });
+  
+  
+  // Reset tabs to first tab when switching tools
+  if (toolName === 'hop') {
+    switchTab('aroma');
+  } else if (toolName === 'yeast') {
+    switchYeastTab('yeast-aroma');
+  }
 }
 
 /* =====================  SISTEMA DE ABAS  ===================== */
@@ -910,13 +1581,39 @@ function switchTab(tabName) {
   });
 }
 
+function switchYeastTab(tabName) {
+  // Atualizar botões das abas de levedura
+  document.querySelectorAll('#yeast-tool .tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tabName);
+  });
+  
+  // Atualizar conteúdo das abas de levedura
+  document.querySelectorAll('#yeast-tool .tab-content').forEach(content => {
+    content.classList.toggle('active', content.id === `${tabName}-content`);
+  });
+}
+
 /* listeners */
 leftSel.addEventListener('change', update);
 rightSel.addEventListener('change', update);
 
-// Tab switching
-document.querySelectorAll('.tab-btn').forEach(btn => {
+// Yeast listeners
+leftSelYeast.addEventListener('change', updateYeast);
+rightSelYeast.addEventListener('change', updateYeast);
+
+// Menu switching
+document.querySelectorAll('.menu-btn').forEach(btn => {
+  btn.addEventListener('click', () => switchTool(btn.dataset.tool));
+});
+
+// Tab switching for hop tool
+document.querySelectorAll('#hop-tool .tab-btn').forEach(btn => {
   btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+});
+
+// Tab switching for yeast tool
+document.querySelectorAll('#yeast-tool .tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => switchYeastTab(btn.dataset.tab));
 });
 
 // Language switching
@@ -930,12 +1627,26 @@ document.addEventListener('DOMContentLoaded', function() {
   // Configura idioma inicial
   switchLanguage(currentLang);
 
-  /* pré-seleções simpáticas */
+  // Inicializa listas de opções
+  fillSelects(DATA);
+  fillYeastSelects(YEAST_DATA);
+
+  // Configura ferramenta inicial (hop)
+  switchTool('hop');
+
+  /* pré-seleções simpáticas para hops */
   const defaultLeft = byName.has('Cascade') ? 'Cascade' : DATA[0].nome;
   const defaultRight = byName.has('Citra') ? 'Citra' : (DATA[1]?.nome ?? '');
   leftSel.value = defaultLeft;
   rightSel.value = defaultRight;
   update();
+
+  /* pré-seleções simpáticas para yeasts */
+  const defaultLeftYeast = yeastByName.has('Safale US-05') ? 'Safale US-05' : YEAST_DATA[0].nome;
+  const defaultRightYeast = yeastByName.has('Wyeast 1968 London ESB') ? 'Wyeast 1968 London ESB' : (YEAST_DATA[1]?.nome ?? '');
+  leftSelYeast.value = defaultLeftYeast;
+  rightSelYeast.value = defaultRightYeast;
+  updateYeast();
 });
 </script>
 </body>
