@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-M8N7ECWKVX"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-M8N7ECWKVX');
+</script>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Radar de Cervejaria – Visualização & Comparação</title>
@@ -148,6 +157,14 @@
   .tool-title h2{margin:0 0 8px 0; font-size:20px; color:var(--text)}
   .tool-section{display:none}
   .tool-section.active{display:block}
+  .converter-controls{margin-top:16px}
+  .converter-results{margin-top:20px; display:grid; gap:12px}
+  .result-item{
+    background:#0f1530; border:1px solid #27305a; border-radius:10px; padding:12px;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .result-item b{color:#cfd7ff; font-size:14px}
+  .result-item span{color:var(--text); font-size:16px; font-weight:600}
 </style>
 </head>
 <body>
@@ -163,6 +180,7 @@
   <div class="main-menu">
     <button class="menu-btn active" data-tool="hop" data-i18n="menu_hop_radar">Hop Radar</button>
     <button class="menu-btn" data-tool="yeast" data-i18n="menu_yeast_radar">Yeast Radar</button>
+    <button class="menu-btn" data-tool="converter" data-i18n="menu_converter">Conversor</button>
   </div>
   
   <div class="tool-title">
@@ -360,6 +378,42 @@
     </div>
   </div>
 
+  <!-- Converter Tool -->
+  <div class="tool-section" id="converter-tool">
+    <div class="container">
+      <div class="panel">
+        <h2 data-i18n="converter_title">Conversor de Densidade</h2>
+        <div class="converter-controls">
+          <div class="row">
+            <div>
+              <label for="inputType" data-i18n="input_type_label">Tipo de entrada:</label>
+              <select id="inputType">
+                <option value="plato" data-i18n="plato_option">Plato/BRIX</option>
+                <option value="gravity" data-i18n="gravity_option">Gravity</option>
+              </select>
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <label for="inputValue" data-i18n="input_value_label">Valor:</label>
+              <input type="text" id="inputValue" placeholder="0.0000" />
+            </div>
+          </div>
+          <div class="converter-results">
+            <div class="result-item">
+              <b data-i18n="plato_result">Plato/BRIX:</b>
+              <span id="platoResult">—</span>
+            </div>
+            <div class="result-item">
+              <b data-i18n="gravity_result">Gravity:</b>
+              <span id="gravityResult">—</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 <script>
 /* =====================  INTERNACIONALIZAÇÃO  ===================== */
 const TRANSLATIONS = {
@@ -367,6 +421,7 @@ const TRANSLATIONS = {
     main_title: "Radar de Cervejaria – Visualização & Comparação",
     menu_hop_radar: "Radar de Lúpulos",
     menu_yeast_radar: "Radar de Leveduras",
+    menu_converter: "Conversor de Densidade",
     subtitle: "Selecione um lúpulo para o <b>lado esquerdo</b> (azul) e, opcionalmente, outro para o <b>lado direito</b> (magenta). Passe o mouse no gráfico para ver os valores.",
     warning: "⚠️ se algum item não estiver incluido na lista ou estiver incorreto, envie um email para reisraff@gmail.com",
     controls: "Controles",
@@ -412,6 +467,14 @@ const TRANSLATIONS = {
     yeast_chart_title: "Gráfico em Teia",
     yeast_specs_title: "Especificações",
     yeast_footnote: "As pontas representam as características: Frutal, Floral, Picante, Fenol, Ester, Limpo, Cremoso, Mineral, Alcoólico, Acidez, Complexo, Selva, Terroso, Doce.",
+    // Converter translations
+    converter_title: "Conversor de Densidade",
+    input_type_label: "Tipo de entrada:",
+    input_value_label: "Valor:",
+    plato_option: "Plato/BRIX",
+    gravity_option: "Gravity",
+    plato_result: "Plato/BRIX:",
+    gravity_result: "Gravity:",
     yeast_specs_footnote: "Comparação de tolerância ao álcool e faixa de temperatura ideal.",
     select_left_yeast: "— escolher —",
     select_right_yeast: "— (opcional) —",
@@ -436,6 +499,7 @@ const TRANSLATIONS = {
     main_title: "Brewery Radar – Visualization & Comparison",
     menu_hop_radar: "Hop Radar",
     menu_yeast_radar: "Yeast Radar",
+    menu_converter: "Density Converter",
     title: "Hop Radar – Visualization & Comparison",
     subtitle: "Select a hop for the <b>left side</b> (blue) and optionally another for the <b>right side</b> (magenta). Hover over the chart to see values.",
     warning: "⚠️ If any item is not included in the list or is incorrect, send an email to reisraff@gmail.com",
@@ -483,6 +547,14 @@ const TRANSLATIONS = {
     yeast_chart_title: "Radar Chart",
     yeast_specs_title: "Specifications",
     yeast_footnote: "The points represent characteristics: Fruity, Floral, Spicy, Phenol, Ester, Clean, Creamy, Mineral, Alcoholic, Acidity, Complex, Wild, Earthy, Sweet.",
+    // Converter translations
+    converter_title: "Density Converter",
+    input_type_label: "Input type:",
+    input_value_label: "Value:",
+    plato_option: "Plato/BRIX",
+    gravity_option: "Gravity",
+    plato_result: "Plato/BRIX:",
+    gravity_result: "Gravity:",
     yeast_specs_footnote: "Comparison of alcohol tolerance and ideal temperature range.",
     select_left_yeast: "— choose —",
     select_right_yeast: "— (optional) —",
@@ -507,6 +579,7 @@ const TRANSLATIONS = {
     main_title: "Radar de Cervecería – Visualización y Comparación",
     menu_hop_radar: "Radar de Lúpulos",
     menu_yeast_radar: "Radar de Levaduras",
+    menu_converter: "Convertidor de Densidad",
     title: "Radar de Lúpulos – Visualización y Comparación",
     subtitle: "Selecciona un lúpulo para el <b>lado izquierdo</b> (azul) y opcionalmente otro para el <b>lado derecho</b> (magenta). Pasa el mouse sobre el gráfico para ver los valores.",
     warning: "⚠️ Si algún elemento no está incluido en la lista o es incorrecto, envía un email a reisraff@gmail.com",
@@ -554,6 +627,14 @@ const TRANSLATIONS = {
     yeast_chart_title: "Gráfico Radial",
     yeast_specs_title: "Especificaciones",
     yeast_footnote: "Los puntos representan las características: Frutal, Floral, Picante, Fenol, Ester, Limpio, Cremoso, Mineral, Alcohólico, Acidez, Complejo, Selva, Terroso, Dulce.",
+    // Converter translations
+    converter_title: "Convertidor de Densidad",
+    input_type_label: "Tipo de entrada:",
+    input_value_label: "Valor:",
+    plato_option: "Plato/BRIX",
+    gravity_option: "Gravity",
+    plato_result: "Plato/BRIX:",
+    gravity_result: "Gravity:",
     yeast_specs_footnote: "Comparación de tolerancia al alcohol y rango de temperatura ideal.",
     select_left_yeast: "— elegir —",
     select_right_yeast: "— (opcional) —",
@@ -1682,6 +1763,77 @@ function switchYeastTab(tabName) {
   });
 }
 
+/* =====================  CONVERSOR DE DENSIDADE  ===================== */
+function convertValues(inputType, inputValue) {
+  const value = parseFloat(inputValue);
+  if (isNaN(value) || value < 0) {
+    return { plato: '—', gravity: '—' };
+  }
+
+  let platoValue, gravityValue;
+  
+  if (inputType === 'plato') {
+    platoValue = value;
+    gravityValue = 1 + (value * 0.004037);
+  } else { // gravity
+    gravityValue = value;
+    platoValue = (value - 1) / 0.004037;
+  }
+
+  return {
+    plato: platoValue.toFixed(4),
+    gravity: gravityValue.toFixed(3)
+  };
+}
+
+function applyInputMask(inputType, inputValue) {
+  // Remove caracteres não numéricos exceto ponto
+  let cleaned = inputValue.replace(/[^0-9.]/g, '');
+  
+  // Garantir apenas um ponto decimal
+  const parts = cleaned.split('.');
+  if (parts.length > 2) {
+    cleaned = parts[0] + '.' + parts.slice(1).join('');
+  }
+  
+  // Aplicar máscaras específicas
+  if (inputType === 'plato') {
+    // Máscara XX.XXXX para Plato/BRIX
+    if (parts[0].length > 2) {
+      cleaned = cleaned.substring(0, 2) + (parts[1] ? '.' + parts[1].substring(0, 4) : '');
+    } else if (parts[1] && parts[1].length > 4) {
+      cleaned = parts[0] + '.' + parts[1].substring(0, 4);
+    }
+  } else {
+    // Máscara X.XXX para Gravity (permite valores como 1.050)
+    if (parts[1] && parts[1].length > 3) {
+      cleaned = parts[0] + '.' + parts[1].substring(0, 3);
+    }
+  }
+  
+  return cleaned;
+}
+
+function updateConverter() {
+  const inputType = document.getElementById('inputType').value;
+  const inputValue = document.getElementById('inputValue').value;
+  
+  // Aplicar conversões
+  const results = convertValues(inputType, inputValue);
+  
+  // Atualizar resultados
+  document.getElementById('platoResult').textContent = results.plato;
+  document.getElementById('gravityResult').textContent = results.gravity;
+  
+  // Atualizar placeholder baseado no tipo
+  const inputField = document.getElementById('inputValue');
+  if (inputType === 'plato') {
+    inputField.placeholder = '00.0000';
+  } else {
+    inputField.placeholder = '0.000';
+  }
+}
+
 /* listeners */
 leftSel.addEventListener('change', update);
 rightSel.addEventListener('change', update);
@@ -1689,6 +1841,18 @@ rightSel.addEventListener('change', update);
 // Yeast listeners
 leftSelYeast.addEventListener('change', updateYeast);
 rightSelYeast.addEventListener('change', updateYeast);
+// Converter listeners
+document.getElementById('inputType').addEventListener('change', function() {
+  updateConverter();
+  // Limpar input quando trocar o tipo
+  document.getElementById('inputValue').value = '';
+});
+document.getElementById('inputValue').addEventListener('input', function(e) {
+  const inputType = document.getElementById('inputType').value;
+  const masked = applyInputMask(inputType, e.target.value);
+  e.target.value = masked;
+  updateConverter();
+});
 
 // Menu switching
 document.querySelectorAll('.menu-btn').forEach(btn => {
