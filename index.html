@@ -257,6 +257,7 @@
     width:100%; height:40px; position:relative; 
     border:1px solid #27305a; border-radius:4px; overflow:hidden;
     box-shadow: 0 4px 8px rgba(0,0,0,.15);
+    cursor: pointer;
   }
   .color-ruler-indicator{
     position:absolute; top:0; width:2px; height:40px; 
@@ -3021,6 +3022,23 @@ document.getElementById('colorInputValue').addEventListener('input', function(e)
 
 document.getElementById('beerTransparency').addEventListener('input', function() {
   updateTransparencyDisplay();
+});
+
+// Color ruler click handler
+document.getElementById('colorRuler').addEventListener('click', function(e) {
+  const rect = this.getBoundingClientRect();
+  const clickX = e.clientX - rect.left;
+  const percentage = Math.max(0, Math.min(100, (clickX / rect.width) * 100));
+  
+  // Convert percentage to SRM value (1-40)
+  const srmValue = 1 + (percentage / 100) * 39;
+  
+  // Update the input field
+  document.getElementById('colorInputValue').value = srmValue.toFixed(1);
+  document.getElementById('colorInputType').value = 'srm';
+  
+  // Update the converter display
+  updateColorConverter();
 });
 
 // Pitch rate calculator functions
