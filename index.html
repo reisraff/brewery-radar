@@ -248,7 +248,7 @@
     <button class="menu-btn active" data-tool="hop" data-i18n="menu_hop_radar">Hop Radar</button>
     <button class="menu-btn" data-tool="yeast" data-i18n="menu_yeast_radar">Yeast Radar</button>
     <button class="menu-btn" data-tool="converter" data-i18n="menu_converter">Conversor</button>
-    <button class="menu-btn" data-tool="abv" data-i18n="menu_abv" style="display: none;">Calculadora ABV</button>
+    <button class="menu-btn" data-tool="abv" data-i18n="menu_abv">Calculadora ABV</button>
     <button class="menu-btn" data-tool="color" data-i18n="menu_color">Conversor de Cor</button>
     <button class="menu-btn" data-tool="pitch" data-i18n="menu_pitch">Taxa de Inoculação</button>
   </div>
@@ -522,7 +522,8 @@
             </div>
             <div>
               <label for="fgValue" data-i18n="fg_value_label">Valor FG:</label>
-              <input type="text" id="fgValue" placeholder="1.010" />
+              <input type="text" id="fgValue" placeholder="1.010" style="width: 50%;" />
+              <span id="fgCorrespondentValue" style="margin-left: 10px; color: #666; font-size: 0.9em;"></span>
             </div>
           </div>
           <div class="row">
@@ -547,6 +548,22 @@
             <div class="result-item">
               <b data-i18n="abw_result">ABW:</b>
               <span id="abwResult">—</span>
+            </div>
+            <div class="result-item">
+              <b data-i18n="apparent_attenuation_result">Atenuação aparente:</b>
+              <span id="apparentAttenuationResult">—</span>
+            </div>
+            <div class="result-item">
+              <b data-i18n="real_attenuation_result">Atenuação real:</b>
+              <span id="realAttenuationResult">—</span>
+            </div>
+            <div class="result-item">
+              <b data-i18n="calories_result">kcal/kJ por 100ml:</b>
+              <span id="caloriesResult">—</span>
+            </div>
+            <div class="result-item">
+              <b data-i18n="carbs_result">g carboidratos por 100ml:</b>
+              <span id="carbsResult">—</span>
             </div>
           </div>
         </div>
@@ -933,6 +950,10 @@ const TRANSLATIONS = {
     density_plato_result: "Plato/BRIX:",
     abv_result: "ABV:",
     abw_result: "ABW:",
+    apparent_attenuation_result: "Atenuação aparente:",
+    real_attenuation_result: "Atenuação real:",
+    calories_result: "kcal/kJ por 100ml:",
+    carbs_result: "g carboidratos por 100ml:",
     yeast_specs_footnote: "Comparação de tolerância ao álcool e faixa de temperatura ideal.",
     select_left_yeast: "— escolher —",
     select_right_yeast: "— (opcional) —",
@@ -1066,6 +1087,10 @@ const TRANSLATIONS = {
     density_plato_result: "Plato/BRIX:",
     abv_result: "ABV:",
     abw_result: "ABW:",
+    apparent_attenuation_result: "Apparent attenuation:",
+    real_attenuation_result: "Real attenuation:",
+    calories_result: "kcal/kJ per 100ml:",
+    carbs_result: "g carbs per 100ml:",
     yeast_specs_footnote: "Comparison of alcohol tolerance and ideal temperature range.",
     select_left_yeast: "— choose —",
     select_right_yeast: "— (optional) —",
@@ -1199,6 +1224,10 @@ const TRANSLATIONS = {
     density_plato_result: "Plato/BRIX:",
     abv_result: "ABV:",
     abw_result: "ABW:",
+    apparent_attenuation_result: "Atenuación aparente:",
+    real_attenuation_result: "Atenuación real:",
+    calories_result: "kcal/kJ por 100ml:",
+    carbs_result: "g carbohidratos por 100ml:",
     yeast_specs_footnote: "Comparación de tolerancia al alcohol y rango de temperatura ideal.",
     select_left_yeast: "— elegir —",
     select_right_yeast: "— (opcional) —",
@@ -2495,48 +2524,82 @@ document.getElementById('inputValue').addEventListener('input', function(e) {
 });
 
 /* =====================  CALCULADORA ABV  ===================== */
+
+// Legacy compatibility functions
 function platoToGravity(plato) {
-  // More accurate Plato to Gravity conversion
   return 1 + (plato / (258.6 - ((plato / 258.2) * 227.1)));
 }
 
 function gravityToPlato(gravity) {
-  // More accurate Gravity to Plato conversion  
   return (-1 * 616.868) + (1111.14 * gravity) - (630.272 * gravity * gravity) + (135.997 * gravity * gravity * gravity);
 }
 
-function correctRefractometerReading(ogGravity, fgRefractometerGravity) {
-  // Correção para leitura de refratômetro na presença de álcool
-  // Fórmula ajustada para brewing caseiro
-  // Esta fórmula considera que o refratômetro lê incorretamente devido ao álcool
-  
-  // Converter para pontos de gravidade (gravity points)
-  const ogPoints = (ogGravity - 1) * 1000;
-  const fgRefractPoints = (fgRefractometerGravity - 1) * 1000;
-  
-  // Aplicar correção empírica ajustada
-  // Fórmula ajustada para exemplo: OG 1.042, FG refract 1.019 → real FG 1.005
-  const correctedPoints = (0.78 * fgRefractPoints) - (0.30 * ogPoints) + 1.4;
-  const correctedFG = 1 + (correctedPoints / 1000);
-  
-  return Math.max(0.990, Math.min(1.020, correctedFG)); // Limitar FG entre valores realistas
+function computeRefractometerFG(OG_brix, FG_brix) {
+  return 1.0000 + FG_brix * 0.006276 - 0.002349 * OG_brix;
 }
 
-function calculateABV(og, fg, correctionFactor = 1.04) {
-  let ogGravity = og;
-  let fgGravity = fg;
+function computeABV({
+  ogType, ogValue,
+  fgMethod, fgType, fgValue,
+  correction = 1.04
+}) {
+  // Validation ranges
+  function clampOG(value, type) {
+    if (type === 'gravity') {
+      return Math.max(1.000, Math.min(1.150, value));
+    } else {
+      return Math.max(0, Math.min(40, value));
+    }
+  }
   
-  // ABV calculation: (OG - FG) * 134
-  const abv = (ogGravity - fgGravity) * 134;
+  function clampFG(value, type) {
+    if (type === 'gravity') {
+      return Math.max(0.990, Math.min(1.040, value));
+    } else {
+      return Math.max(0, Math.min(20, value));
+    }
+  }
   
-  // ABW calculation: ABV * 0.789 (conversion factor from volume to weight)
-  const abw = abv * 0.789;
+  // Clamp input values
+  ogValue = clampOG(ogValue, ogType);
+  fgValue = clampFG(fgValue, fgType);
   
+  // normalize OG and FG to SG & Brix
+  const OG_sg = (ogType === 'gravity') ? ogValue : platoToGravity(ogValue);
+  const OG_brix = gravityToPlato(OG_sg);
+  const FG_sg_input = (fgType === 'gravity') ? fgValue : platoToGravity(fgValue);
+  const FG_brix_input = gravityToPlato(FG_sg_input);
+
+  const FG_sg = (fgMethod === 'hydrometer') ? FG_sg_input : computeRefractometerFG(OG_brix, (FG_brix_input / correction));
+
+  const ABV = (OG_sg - FG_sg) * 131.25;
+  const ABW = ABV * 0.79336;
+  
+  // Calculate attenuations
+  const apparentAttenuation = ((OG_sg - FG_sg) / (OG_sg - 1)) * 100;
+  
+  const realExtract = 0.1808 * OG_brix + 0.8192 * gravityToPlato(FG_sg);
+  const realAttenuationPercent = ((OG_brix - realExtract) / OG_brix) * 100;
+  
+  const caloriesKcal = (6.9 * ABW) + (4.0 * realExtract) - 0.1;
+  const caloriesKj = caloriesKcal * 4.184;
+  
+  // Carbs per 100ml: Real Extract × density conversion
+  const carbsPer100ml = realExtract * 1.0;
+
   return {
-    abv: Math.max(0, abv).toFixed(2),
-    abw: Math.max(0, abw).toFixed(2),
-    fgGravity: fgGravity,
-    fgPlato: gravityToPlato(fgGravity)
+    gravity: Math.round(FG_sg * 1000) / 1000,
+    platoBrix: {
+      OG: Math.round(gravityToPlato(OG_sg) * 100) / 100,
+      FG: Math.round(gravityToPlato(FG_sg) * 100) / 100
+    },
+    abv: Math.round(ABV * 100) / 100,
+    abw: Math.round(ABW * 100) / 100,
+    apparentAttenuation: Math.round(apparentAttenuation * 100) / 100,
+    realAttenuation: Math.round(realAttenuationPercent * 100) / 100,
+    caloriesKcal: Math.round(caloriesKcal * 100) / 100,
+    caloriesKj: Math.round(caloriesKj * 100) / 100,
+    carbsPer100ml: Math.round(carbsPer100ml * 100) / 100
   };
 }
 
@@ -2553,6 +2616,27 @@ function updateABVPlaceholders() {
   fgInput.placeholder = fgType === 'gravity' ? '1.010' : '2.5';
 }
 
+function updateFGCorrespondentValue() {
+  const fgType = document.getElementById('fgType').value;
+  const fgValue = parseFloat(document.getElementById('fgValue').value);
+  const correspondentSpan = document.getElementById('fgCorrespondentValue');
+  
+  if (isNaN(fgValue) || fgValue <= 0) {
+    correspondentSpan.textContent = '';
+    return;
+  }
+  
+  if (fgType === 'gravity') {
+    // Convert gravity to plato/brix
+    const plato = gravityToPlato(fgValue);
+    correspondentSpan.textContent = `(${plato.toFixed(2)}°P)`;
+  } else {
+    // Convert plato/brix to gravity
+    const gravity = platoToGravity(fgValue);
+    correspondentSpan.textContent = `(${gravity.toFixed(3)})`;
+  }
+}
+
 function updateABVCalculator() {
   const ogType = document.getElementById('ogType').value;
   const ogValue = parseFloat(document.getElementById('ogValue').value);
@@ -2567,33 +2651,32 @@ function updateABVCalculator() {
     document.getElementById('densityPlatoResult').textContent = '—';
     document.getElementById('abvResult').textContent = '—';
     document.getElementById('abwResult').textContent = '—';
+    document.getElementById('apparentAttenuationResult').textContent = '—';
+    document.getElementById('realAttenuationResult').textContent = '—';
+    document.getElementById('caloriesResult').textContent = '—';
+    document.getElementById('carbsResult').textContent = '—';
     return;
   }
   
-  // Convert OG to gravity format
-  let ogGravity = ogType === 'plato' ? platoToGravity(ogValue) : ogValue;
-  let ogPlato = ogType === 'gravity' ? gravityToPlato(ogValue) : ogValue;
+  // Use the new computation function
+  const results = computeABV({
+    ogType: ogType === 'plato' ? 'plato' : 'gravity',
+    ogValue: ogValue,
+    fgMethod: fgMethod === 'refractometer' ? 'refractometer' : 'hydrometer',
+    fgType: fgType === 'plato' ? 'plato' : 'gravity',
+    fgValue: fgValue,
+    correction: correctionFactor
+  });
   
-  // Handle FG based on measurement method
-  let fgGravity;
-  
-  if (fgMethod === 'refractometer') {
-    // Apply refractometer correction
-    let fgRefractometerGravity = fgType === 'plato' ? platoToGravity(fgValue) : fgValue;
-    fgGravity = correctRefractometerReading(ogGravity, fgRefractometerGravity);
-  } else {
-    // Direct hydrometer reading
-    fgGravity = fgType === 'plato' ? platoToGravity(fgValue) : fgValue;
-  }
-  
-  // Calculate ABV, ABW and get FG conversions
-  const results = calculateABV(ogGravity, fgGravity, correctionFactor);
-  
-  // Display results - only final gravity (FG) conversions (corrected values)
-  document.getElementById('densityGravityResult').textContent = results.fgGravity.toFixed(3);
-  document.getElementById('densityPlatoResult').textContent = results.fgPlato.toFixed(4);
-  document.getElementById('abvResult').textContent = results.abv + '%';
-  document.getElementById('abwResult').textContent = results.abw + '%';
+  // Display results
+  document.getElementById('densityGravityResult').textContent = results.gravity.toFixed(3);
+  document.getElementById('densityPlatoResult').textContent = results.platoBrix.FG.toFixed(2);
+  document.getElementById('abvResult').textContent = results.abv.toFixed(2) + '%';
+  document.getElementById('abwResult').textContent = results.abw.toFixed(2) + '%';
+  document.getElementById('apparentAttenuationResult').textContent = results.apparentAttenuation.toFixed(1) + '%';
+  document.getElementById('realAttenuationResult').textContent = results.realAttenuation.toFixed(1) + '%';
+  document.getElementById('caloriesResult').textContent = results.caloriesKcal.toFixed(1) + ' kcal / ' + results.caloriesKj.toFixed(1) + ' kJ';
+  document.getElementById('carbsResult').textContent = results.carbsPer100ml.toFixed(1) + ' g';
 }
 
 /* ===================== COLOR CONVERSION FUNCTIONS ===================== */
@@ -2808,6 +2891,15 @@ document.getElementById('ogValue').addEventListener('input', function(e) {
 });
 
 document.getElementById('fgMethod').addEventListener('change', function() {
+  const fgMethod = this.value;
+  const correctionFactorRow = document.getElementById('correctionFactor').closest('.row');
+  
+  if (fgMethod === 'hydrometer') {
+    correctionFactorRow.style.display = 'none';
+  } else {
+    correctionFactorRow.style.display = '';
+  }
+  
   updateABVCalculator();
 });
 
@@ -2816,12 +2908,14 @@ document.getElementById('fgType').addEventListener('change', function() {
   updateABVCalculator();
   // Limpar input quando trocar o tipo
   document.getElementById('fgValue').value = '';
+  updateFGCorrespondentValue();
 });
 
 document.getElementById('fgValue').addEventListener('input', function(e) {
   const fgType = document.getElementById('fgType').value;
   const masked = applyInputMask(fgType, e.target.value);
   e.target.value = masked;
+  updateFGCorrespondentValue();
   updateABVCalculator();
 });
 
@@ -3012,6 +3106,10 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Inicializa placeholders da calculadora ABV
   updateABVPlaceholders();
+  
+  // Inicializa visibilidade do fator de correção (oculto por padrão com densímetro)
+  const correctionFactorRow = document.getElementById('correctionFactor').closest('.row');
+  correctionFactorRow.style.display = 'none';
   
   // Inicializa calculadora de taxa de inoculação
   updatePitchPlaceholders();
