@@ -28,16 +28,22 @@
   *{box-sizing:border-box}
   html{overflow-x:hidden}
   body{
-    margin:0; padding:24px;
+    margin:0;
+    padding:24px;
     font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
-    color:var(--text); background: radial-gradient(1200px 700px at 20% -10%, #1c2550 0%, var(--bg) 35%), var(--bg);
+    color:var(--text);
+    background: radial-gradient(1200px 700px at 50% -5%, #1c2550 0%, var(--bg) 35%), var(--bg);
     -webkit-text-size-adjust: 100%;
   }
   h1{font-size:clamp(18px,4vw,28px); margin:0 0 8px 0; letter-spacing:.2px}
   .sub{color:var(--muted); margin-bottom:22px}
   .container{
-    display:grid; gap:18px;
-    grid-template-columns: 460px 1fr 460px;
+    display:flex;
+    justify-content: center;
+  }
+  .panel{
+    min-width: 30%;
+    margin: 5px;
   }
   #color-tool .container{
     grid-template-columns: minmax(300px, 644px) 1fr minmax(300px, 644px);
@@ -87,7 +93,6 @@
     .lang-btn{padding:4px 6px; font-size:10px}
     .meta .item{padding:8px 10px}
     .result-item{padding:10px}
-    .pitch-info{padding:16px}
     .converter-main-content{display:block}
     .beer-glass-container{min-height:80px; padding:6px; margin:12px 0}
     .beer-glass{max-width:120px; max-height:144px; width:100%; height:auto}
@@ -232,14 +237,6 @@
   }
   .result-item b{color:#cfd7ff; font-size:14px}
   .result-item span{color:var(--text); font-size:16px; font-weight:600}
-  .pitch-info{
-    background:#0f1530; border:1px solid #27305a; border-radius:10px; padding:20px;
-    margin-top:20px;
-  }
-  .pitch-info h3{color:var(--brand-left); margin:0 0 12px 0; font-size:18px}
-  .pitch-info p{color:var(--muted); margin:0 0 16px 0; line-height:1.5}
-  .pitch-info ul{margin:0; padding-left:20px; color:var(--muted)}
-  .pitch-info li{margin-bottom:8px; line-height:1.4}
   .color-display{margin-top:16px}
   .color-samples{display:grid; grid-template-columns:repeat(3, 1fr); gap:12px}
   .color-sample{text-align:center}
@@ -909,19 +906,6 @@
           </div>
         </div>
       </div>
-      <div class="chart-panel">
-        <div class="chart-container">
-          <div class="pitch-info">
-            <h3 data-i18n="pitch_info_title">Informações sobre Taxa de Inoculação</h3>
-            <p data-i18n="pitch_info_desc">A taxa de inoculação adequada é essencial para uma fermentação saudável. Use os valores calculados como referência.</p>
-            <ul>
-              <li data-i18n="pitch_info_ale">ALE: Fermentação mais rápida, temperatura mais alta</li>
-              <li data-i18n="pitch_info_lager">Lager: Fermentação mais lenta, temperatura mais baixa, requer mais células</li>
-              <li data-i18n="pitch_info_og">OG mais alta requer mais células de levedura</li>
-            </ul>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 
@@ -1051,11 +1035,6 @@ const TRANSLATIONS = {
     lager_high_option: "Lager 2.0 (1.060 ou superior)",
     pitch_cells_result: "Células recomendadas:",
     pitch_packs_result: "Leveduras para usar:",
-    pitch_info_title: "Informações sobre Taxa de Inoculação",
-    pitch_info_desc: "A taxa de inoculação adequada é essencial para uma fermentação saudável. Use os valores calculados como referência.",
-    pitch_info_ale: "ALE: Fermentação mais rápida, temperatura mais alta",
-    pitch_info_lager: "Lager: Fermentação mais lenta, temperatura mais baixa, requer mais células",
-    pitch_info_og: "OG mais alta requer mais células de levedura",
     billion_cells: "Bilhões de Células",
     dry_pack: "pacote seco",
     liquid_pack: "pacote líquido",
@@ -1188,11 +1167,6 @@ const TRANSLATIONS = {
     lager_high_option: "Lager 2.0 (1.060 or higher)",
     pitch_cells_result: "Recommended cells:",
     pitch_packs_result: "Yeast packs to use:",
-    pitch_info_title: "Pitch Rate Information",
-    pitch_info_desc: "Proper pitch rate is essential for healthy fermentation. Use calculated values as reference.",
-    pitch_info_ale: "ALE: Faster fermentation, higher temperature",
-    pitch_info_lager: "Lager: Slower fermentation, lower temperature, requires more cells",
-    pitch_info_og: "Higher OG requires more yeast cells",
     billion_cells: "Billion Cells",
     dry_pack: "dry pack",
     liquid_pack: "liquid pack",
@@ -1325,11 +1299,6 @@ const TRANSLATIONS = {
     lager_high_option: "Lager 2.0 (1.060 o superior)",
     pitch_cells_result: "Células recomendadas:",
     pitch_packs_result: "Levaduras para usar:",
-    pitch_info_title: "Información sobre Tasa de Inoculación",
-    pitch_info_desc: "La tasa de inoculación adecuada es esencial para una fermentación saludable. Use los valores calculados como referencia.",
-    pitch_info_ale: "ALE: Fermentación más rápida, temperatura más alta",
-    pitch_info_lager: "Lager: Fermentación más lenta, temperatura más baja, requiere más células",
-    pitch_info_og: "OG más alta requiere más células de levadura",
     billion_cells: "Miles de Millones de Células",
     dry_pack: "paquete seco",
     liquid_pack: "paquete líquido",
