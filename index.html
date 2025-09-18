@@ -35,10 +35,14 @@
   .sub{color:var(--muted); margin-bottom:22px}
   .container{
     display:grid; gap:18px;
-    grid-template-columns: 320px 1fr 320px;
+    grid-template-columns: 460px 1fr 460px;
+  }
+  #color-tool .container{
+    grid-template-columns: 644px 1fr 644px;
   }
   @media (max-width: 1200px){
-    .container{grid-template-columns: 280px 1fr 280px; gap:12px}
+    .container{grid-template-columns: 400px 1fr 400px; gap:12px}
+    #color-tool .container{grid-template-columns: 560px 1fr 560px; gap:12px}
   }
   @media (max-width: 980px){
     .container{
@@ -165,6 +169,58 @@
   }
   .result-item b{color:#cfd7ff; font-size:14px}
   .result-item span{color:var(--text); font-size:16px; font-weight:600}
+  .color-display{margin-top:16px}
+  .color-samples{display:grid; grid-template-columns:repeat(3, 1fr); gap:12px}
+  .color-sample{text-align:center}
+  .color-box{
+    width:100%; height:60px; border-radius:8px; margin-bottom:8px;
+    border:1px solid #27305a; background:#0f1530;
+    transition:all 0.3s ease;
+  }
+  .color-sample span{font-size:12px; color:var(--muted)}
+  .color-ruler-container{
+    position:relative; margin-top:24px; 
+    width:calc(100% + 32px); margin-left:-16px; height:60px;
+  }
+  .color-ruler{
+    width:100%; height:40px; position:relative; 
+    border:1px solid #27305a; border-radius:4px; overflow:hidden;
+    box-shadow: 0 4px 8px rgba(0,0,0,.15);
+  }
+  .color-ruler-indicator{
+    position:absolute; top:0; width:2px; height:40px; 
+    background:#fff; border:1px solid #000; z-index:10;
+    opacity:0; transition:all 0.3s ease; pointer-events:none;
+    box-shadow:0 0 4px rgba(255,255,255,0.8);
+  }
+  .color-ruler-labels{
+    display:flex; justify-content:space-between; margin-top:4px; 
+    font-size:11px; color:var(--muted); padding:0 8px;
+  }
+  .converter-main-content{display:flex; gap:24px; align-items:flex-start}
+  .converter-left{flex:1}
+  .converter-right{flex-shrink:0}
+  .beer-glass-container{
+    display:flex; justify-content:center; align-items:center;
+    background:rgba(255,255,255,0.02); border:1px solid #27305a;
+    border-radius:12px; padding:16px; min-height:160px;
+  }
+  .beer-glass{filter:drop-shadow(2px 2px 4px rgba(0,0,0,0.3))}
+  input[type="range"]{
+    width:100%; margin:8px 0; appearance:none; height:4px;
+    background:#27305a; border-radius:2px; outline:none;
+  }
+  input[type="range"]::-webkit-slider-thumb{
+    appearance:none; width:16px; height:16px; border-radius:50%;
+    background:var(--brand-left); cursor:pointer;
+  }
+  input[type="range"]::-moz-range-thumb{
+    width:16px; height:16px; border-radius:50%;
+    background:var(--brand-left); cursor:pointer; border:none;
+  }
+  #transparencyValue{
+    font-size:12px; color:var(--muted); margin-left:8px;
+  }
 </style>
 </head>
 <body>
@@ -181,6 +237,8 @@
     <button class="menu-btn active" data-tool="hop" data-i18n="menu_hop_radar">Hop Radar</button>
     <button class="menu-btn" data-tool="yeast" data-i18n="menu_yeast_radar">Yeast Radar</button>
     <button class="menu-btn" data-tool="converter" data-i18n="menu_converter">Conversor</button>
+    <button class="menu-btn" data-tool="abv" data-i18n="menu_abv" style="display: none;">Calculadora ABV</button>
+    <button class="menu-btn" data-tool="color" data-i18n="menu_color">Conversor de Cor</button>
   </div>
   
   <div class="tool-title">
@@ -414,6 +472,190 @@
     </div>
   </div>
 
+  <!-- ABV Calculator Tool -->
+  <div class="tool-section" id="abv-tool">
+    <div class="container">
+      <div class="panel">
+        <h2 data-i18n="abv_title">Calculadora de ABV</h2>
+        <div class="converter-controls">
+          <div class="row">
+            <div>
+              <label for="ogType" data-i18n="og_type_label">Gravidade Original (OG):</label>
+              <select id="ogType">
+                <option value="gravity" data-i18n="gravity_option">Gravity</option>
+                <option value="plato" data-i18n="plato_option">Plato/BRIX</option>
+              </select>
+            </div>
+            <div>
+              <label for="ogValue" data-i18n="og_value_label">Valor OG:</label>
+              <input type="text" id="ogValue" placeholder="1.050" />
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <label for="fgMethod" data-i18n="fg_method_label">Método de Medição FG:</label>
+              <select id="fgMethod">
+                <option value="hydrometer" data-i18n="hydrometer_option">Densímetro</option>
+                <option value="refractometer" data-i18n="refractometer_option">Refratômetro</option>
+              </select>
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <label for="fgType" data-i18n="fg_type_label">Gravidade Final (FG):</label>
+              <select id="fgType">
+                <option value="gravity" data-i18n="gravity_option">Gravity</option>
+                <option value="plato" data-i18n="plato_option">Plato/BRIX</option>
+              </select>
+            </div>
+            <div>
+              <label for="fgValue" data-i18n="fg_value_label">Valor FG:</label>
+              <input type="text" id="fgValue" placeholder="1.010" />
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <label for="correctionFactor" data-i18n="correction_factor_label">Fator de Correção:</label>
+              <input type="text" id="correctionFactor" value="1.04" placeholder="1.04" />
+            </div>
+          </div>
+          <div class="converter-results">
+            <div class="result-item">
+              <b data-i18n="density_gravity_result">Gravity:</b>
+              <span id="densityGravityResult">—</span>
+            </div>
+            <div class="result-item">
+              <b data-i18n="density_plato_result">Plato/BRIX:</b>
+              <span id="densityPlatoResult">—</span>
+            </div>
+            <div class="result-item">
+              <b data-i18n="abv_result">ABV:</b>
+              <span id="abvResult">—</span>
+            </div>
+            <div class="result-item">
+              <b data-i18n="abw_result">ABW:</b>
+              <span id="abwResult">—</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Color Converter Tool -->
+  <div class="tool-section" id="color-tool">
+    <div class="container">
+      <div class="panel">
+        <h2 data-i18n="color_title">Conversor de Cor de Cerveja</h2>
+        <div class="converter-controls">
+          <div class="converter-main-content">
+            <div class="converter-left">
+              <div class="row">
+                <div>
+                  <label for="colorInputType" data-i18n="color_input_type_label">Tipo de entrada:</label>
+                  <select id="colorInputType">
+                    <option value="lovibond" data-i18n="lovibond_option">Lovibond</option>
+                    <option value="srm" data-i18n="srm_option">SRM</option>
+                    <option value="ebc" data-i18n="ebc_option">EBC</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="colorInputValue" data-i18n="color_input_value_label">Valor:</label>
+                  <input type="text" id="colorInputValue" placeholder="0" />
+                </div>
+              </div>
+              <div class="row">
+                <div>
+                  <label for="beerTransparency" data-i18n="beer_transparency_label">Transparência da cerveja:</label>
+                  <input type="range" id="beerTransparency" min="0" max="100" step="5" value="80" />
+                  <span id="transparencyValue">80%</span>
+                </div>
+              </div>
+            </div>
+            <div class="converter-right">
+              <div class="beer-glass-container">
+                <svg class="beer-glass" viewBox="0 0 100 120" width="120" height="144">
+                  <defs>
+                    <!-- Pattern for transparency background -->
+                    <pattern id="transparencyPattern" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
+                      <rect x="0" y="0" width="4" height="4" fill="#e0e0e0"/>
+                      <rect x="4" y="4" width="4" height="4" fill="#e0e0e0"/>
+                      <rect x="4" y="0" width="4" height="4" fill="#f5f5f5"/>
+                      <rect x="0" y="4" width="4" height="4" fill="#f5f5f5"/>
+                    </pattern>
+                    <!-- Clip path for glass shape -->
+                    <clipPath id="glassClip">
+                      <path d="M27 102 L27 27 Q27 22 32 22 L68 22 Q73 22 73 27 L73 102 Q73 107 68 107 L32 107 Q27 107 27 102 Z"/>
+                    </clipPath>
+                  </defs>
+                  
+                  <!-- Background pattern (visible through transparent beer) -->
+                  <rect x="27" y="22" width="46" height="85" fill="url(#transparencyPattern)" clip-path="url(#glassClip)"/>
+                  
+                  <!-- Beer liquid -->
+                  <path id="beerLiquid" d="M27 102 L27 27 Q27 22 32 22 L68 22 Q73 22 73 27 L73 102 Q73 107 68 107 L32 107 Q27 107 27 102 Z" 
+                        fill="#F3F993" opacity="0.8"/>
+                  
+                  <!-- Glass outline -->
+                  <path d="M25 100 L25 25 Q25 20 30 20 L70 20 Q75 20 75 25 L75 100 Q75 105 70 105 L30 105 Q25 105 25 100 Z" 
+                        fill="none" stroke="#ddd" stroke-width="2" opacity="0.8"/>
+                  
+                  <!-- Foam/head -->
+                  <ellipse cx="50" cy="25" rx="22" ry="4" fill="#fff" opacity="0.9"/>
+                  
+                  <!-- Glass highlight -->
+                  <path d="M30 25 Q30 22 33 22 L35 22 Q38 22 38 25 L38 95" 
+                        fill="none" stroke="#fff" stroke-width="1.5" opacity="0.3"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+          <div class="converter-results">
+            <div class="result-item">
+              <b data-i18n="lovibond_result">Lovibond:</b>
+              <span id="lovibondResult">—</span>
+            </div>
+            <div class="result-item">
+              <b data-i18n="srm_result">SRM:</b>
+              <span id="srmResult">—</span>
+            </div>
+            <div class="result-item">
+              <b data-i18n="ebc_result">EBC:</b>
+              <span id="ebcResult">—</span>
+            </div>
+          </div>
+          <div class="color-display">
+            <div class="color-samples">
+              <div class="color-sample">
+                <div class="color-box" id="lovibondColorBox"></div>
+                <span data-i18n="lovibond_color_label">Cor Lovibond</span>
+              </div>
+              <div class="color-sample">
+                <div class="color-box" id="srmColorBox"></div>
+                <span data-i18n="srm_color_label">Cor SRM</span>
+              </div>
+              <div class="color-sample">
+                <div class="color-box" id="ebcColorBox"></div>
+                <span data-i18n="ebc_color_label">Cor EBC</span>
+              </div>
+            </div>
+          </div>
+          <div class="color-ruler-container">
+            <div class="color-ruler" id="colorRuler"></div>
+            <div class="color-ruler-indicator" id="colorRulerIndicator"></div>
+            <div class="color-ruler-labels">
+              <span>SRM 1</span>
+              <span>SRM 10</span>
+              <span>SRM 20</span>
+              <span>SRM 30</span>
+              <span>SRM 40</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 <script>
 /* =====================  INTERNACIONALIZAÇÃO  ===================== */
 const TRANSLATIONS = {
@@ -422,6 +664,21 @@ const TRANSLATIONS = {
     menu_hop_radar: "Radar de Lúpulos",
     menu_yeast_radar: "Radar de Leveduras",
     menu_converter: "Conversor de Densidade",
+    menu_abv: "Calculadora ABV",
+    menu_color: "Conversor de Cor",
+    color_title: "Conversor de Cor de Cerveja",
+    color_input_type_label: "Tipo de entrada:",
+    color_input_value_label: "Valor:",
+    lovibond_option: "Lovibond",
+    srm_option: "SRM",
+    ebc_option: "EBC",
+    lovibond_result: "Lovibond:",
+    srm_result: "SRM:",
+    ebc_result: "EBC:",
+    lovibond_color_label: "Cor Lovibond",
+    srm_color_label: "Cor SRM",
+    ebc_color_label: "Cor EBC",
+    beer_transparency_label: "Transparência da cerveja:",
     subtitle: "Selecione um lúpulo para o <b>lado esquerdo</b> (azul) e, opcionalmente, outro para o <b>lado direito</b> (magenta). Passe o mouse no gráfico para ver os valores.",
     warning: "⚠️ se algum item não estiver incluido na lista ou estiver incorreto, envie um email para reisraff@gmail.com",
     controls: "Controles",
@@ -475,6 +732,20 @@ const TRANSLATIONS = {
     gravity_option: "Gravity",
     plato_result: "Plato/BRIX:",
     gravity_result: "Gravity:",
+    // ABV Calculator translations
+    abv_title: "Calculadora de ABV",
+    og_type_label: "Tipo de Gravidade Original:",
+    og_value_label: "Valor OG:",
+    fg_method_label: "Método de Medição FG:",
+    hydrometer_option: "Densímetro",
+    refractometer_option: "Refratômetro",
+    fg_type_label: "Tipo de Gravidade Final:",
+    fg_value_label: "Valor FG:",
+    correction_factor_label: "Fator de Correção:",
+    density_gravity_result: "Gravity:",
+    density_plato_result: "Plato/BRIX:",
+    abv_result: "ABV:",
+    abw_result: "ABW:",
     yeast_specs_footnote: "Comparação de tolerância ao álcool e faixa de temperatura ideal.",
     select_left_yeast: "— escolher —",
     select_right_yeast: "— (opcional) —",
@@ -500,6 +771,21 @@ const TRANSLATIONS = {
     menu_hop_radar: "Hop Radar",
     menu_yeast_radar: "Yeast Radar",
     menu_converter: "Density Converter",
+    menu_abv: "ABV Calculator",
+    menu_color: "Color Converter",
+    color_title: "Beer Color Converter",
+    color_input_type_label: "Input type:",
+    color_input_value_label: "Value:",
+    lovibond_option: "Lovibond",
+    srm_option: "SRM",
+    ebc_option: "EBC",
+    lovibond_result: "Lovibond:",
+    srm_result: "SRM:",
+    ebc_result: "EBC:",
+    lovibond_color_label: "Lovibond Color",
+    srm_color_label: "SRM Color",
+    ebc_color_label: "EBC Color",
+    beer_transparency_label: "Beer transparency:",
     title: "Hop Radar – Visualization & Comparison",
     subtitle: "Select a hop for the <b>left side</b> (blue) and optionally another for the <b>right side</b> (magenta). Hover over the chart to see values.",
     warning: "⚠️ If any item is not included in the list or is incorrect, send an email to reisraff@gmail.com",
@@ -555,6 +841,20 @@ const TRANSLATIONS = {
     gravity_option: "Gravity",
     plato_result: "Plato/BRIX:",
     gravity_result: "Gravity:",
+    // ABV Calculator translations
+    abv_title: "ABV Calculator",
+    og_type_label: "Original Gravity Type:",
+    og_value_label: "OG Value:",
+    fg_method_label: "FG Measurement Method:",
+    hydrometer_option: "Hydrometer",
+    refractometer_option: "Refractometer",
+    fg_type_label: "Final Gravity Type:",
+    fg_value_label: "FG Value:",
+    correction_factor_label: "Correction Factor:",
+    density_gravity_result: "Gravity:",
+    density_plato_result: "Plato/BRIX:",
+    abv_result: "ABV:",
+    abw_result: "ABW:",
     yeast_specs_footnote: "Comparison of alcohol tolerance and ideal temperature range.",
     select_left_yeast: "— choose —",
     select_right_yeast: "— (optional) —",
@@ -580,6 +880,21 @@ const TRANSLATIONS = {
     menu_hop_radar: "Radar de Lúpulos",
     menu_yeast_radar: "Radar de Levaduras",
     menu_converter: "Convertidor de Densidad",
+    menu_abv: "Calculadora ABV",
+    menu_color: "Convertidor de Color",
+    color_title: "Convertidor de Color de Cerveza",
+    color_input_type_label: "Tipo de entrada:",
+    color_input_value_label: "Valor:",
+    lovibond_option: "Lovibond",
+    srm_option: "SRM",
+    ebc_option: "EBC",
+    lovibond_result: "Lovibond:",
+    srm_result: "SRM:",
+    ebc_result: "EBC:",
+    lovibond_color_label: "Color Lovibond",
+    srm_color_label: "Color SRM",
+    ebc_color_label: "Color EBC",
+    beer_transparency_label: "Transparencia de la cerveza:",
     title: "Radar de Lúpulos – Visualización y Comparación",
     subtitle: "Selecciona un lúpulo para el <b>lado izquierdo</b> (azul) y opcionalmente otro para el <b>lado derecho</b> (magenta). Pasa el mouse sobre el gráfico para ver los valores.",
     warning: "⚠️ Si algún elemento no está incluido en la lista o es incorrecto, envía un email a reisraff@gmail.com",
@@ -635,6 +950,20 @@ const TRANSLATIONS = {
     gravity_option: "Gravity",
     plato_result: "Plato/BRIX:",
     gravity_result: "Gravity:",
+    // ABV Calculator translations
+    abv_title: "Calculadora ABV",
+    og_type_label: "Tipo de Gravedad Original:",
+    og_value_label: "Valor OG:",
+    fg_method_label: "Método de Medición FG:",
+    hydrometer_option: "Densímetro",
+    refractometer_option: "Refractómetro",
+    fg_type_label: "Tipo de Gravedad Final:",
+    fg_value_label: "Valor FG:",
+    correction_factor_label: "Factor de Corrección:",
+    density_gravity_result: "Gravity:",
+    density_plato_result: "Plato/BRIX:",
+    abv_result: "ABV:",
+    abw_result: "ABW:",
     yeast_specs_footnote: "Comparación de tolerancia al alcohol y rango de temperatura ideal.",
     select_left_yeast: "— elegir —",
     select_right_yeast: "— (opcional) —",
@@ -1799,16 +2128,62 @@ function applyInputMask(inputType, inputValue) {
   // Aplicar máscaras específicas
   if (inputType === 'plato') {
     // Máscara XX.XXXX para Plato/BRIX
-    if (parts[0].length > 2) {
-      cleaned = cleaned.substring(0, 2) + (parts[1] ? '.' + parts[1].substring(0, 4) : '');
-    } else if (parts[1] && parts[1].length > 4) {
-      cleaned = parts[0] + '.' + parts[1].substring(0, 4);
+    if (cleaned.length === 0) {
+      return cleaned;
     }
+    
+    // Se não tem ponto e tem mais de 2 dígitos, inserir ponto após os 2 primeiros
+    if (!cleaned.includes('.')) {
+      if (cleaned.length > 2) {
+        cleaned = cleaned.substring(0, 2) + '.' + cleaned.substring(2);
+      }
+    }
+    
+    // Reprocessar as partes após inserir o ponto
+    const newParts = cleaned.split('.');
+    
+    // Limitar a parte inteira a 2 dígitos
+    if (newParts[0].length > 2) {
+      newParts[0] = newParts[0].substring(0, 2);
+    }
+    
+    // Limitar casas decimais a 4
+    if (newParts[1] && newParts[1].length > 4) {
+      newParts[1] = newParts[1].substring(0, 4);
+    }
+    
+    cleaned = newParts[0] + (newParts[1] !== undefined ? '.' + newParts[1] : '');
   } else {
-    // Máscara X.XXX para Gravity (permite valores como 1.050)
-    if (parts[1] && parts[1].length > 3) {
-      cleaned = parts[0] + '.' + parts[1].substring(0, 3);
+    // Máscara 1.XXX para Gravity (força valores como 1.050)
+    if (cleaned.length === 0) {
+      return cleaned;
     }
+    
+    // Se não tem ponto, inserir após o primeiro dígito
+    if (!cleaned.includes('.')) {
+      if (cleaned.length === 1) {
+        // Se só tem 1 dígito, deixar como está
+        cleaned = cleaned;
+      } else {
+        // Se tem mais de 1 dígito, inserir ponto após o primeiro
+        cleaned = cleaned.charAt(0) + '.' + cleaned.substring(1);
+      }
+    }
+    
+    // Reprocessar as partes após inserir o ponto
+    const newParts = cleaned.split('.');
+    
+    // Forçar o primeiro dígito a ser 1
+    if (newParts[0] !== '1' && newParts[0].length > 0) {
+      newParts[0] = '1';
+    }
+    
+    // Limitar casas decimais a 3
+    if (newParts[1] && newParts[1].length > 3) {
+      newParts[1] = newParts[1].substring(0, 3);
+    }
+    
+    cleaned = newParts[0] + (newParts[1] !== undefined ? '.' + newParts[1] : '');
   }
   
   return cleaned;
@@ -1854,6 +2229,377 @@ document.getElementById('inputValue').addEventListener('input', function(e) {
   updateConverter();
 });
 
+/* =====================  CALCULADORA ABV  ===================== */
+function platoToGravity(plato) {
+  // More accurate Plato to Gravity conversion
+  return 1 + (plato / (258.6 - ((plato / 258.2) * 227.1)));
+}
+
+function gravityToPlato(gravity) {
+  // More accurate Gravity to Plato conversion  
+  return (-1 * 616.868) + (1111.14 * gravity) - (630.272 * gravity * gravity) + (135.997 * gravity * gravity * gravity);
+}
+
+function correctRefractometerReading(ogGravity, fgRefractometerGravity) {
+  // Correção para leitura de refratômetro na presença de álcool
+  // Fórmula ajustada para brewing caseiro
+  // Esta fórmula considera que o refratômetro lê incorretamente devido ao álcool
+  
+  // Converter para pontos de gravidade (gravity points)
+  const ogPoints = (ogGravity - 1) * 1000;
+  const fgRefractPoints = (fgRefractometerGravity - 1) * 1000;
+  
+  // Aplicar correção empírica ajustada
+  // Fórmula ajustada para exemplo: OG 1.042, FG refract 1.019 → real FG 1.005
+  const correctedPoints = (0.78 * fgRefractPoints) - (0.30 * ogPoints) + 1.4;
+  const correctedFG = 1 + (correctedPoints / 1000);
+  
+  return Math.max(0.990, Math.min(1.020, correctedFG)); // Limitar FG entre valores realistas
+}
+
+function calculateABV(og, fg, correctionFactor = 1.04) {
+  let ogGravity = og;
+  let fgGravity = fg;
+  
+  // ABV calculation: (OG - FG) * 134
+  const abv = (ogGravity - fgGravity) * 134;
+  
+  // ABW calculation: ABV * 0.789 (conversion factor from volume to weight)
+  const abw = abv * 0.789;
+  
+  return {
+    abv: Math.max(0, abv).toFixed(2),
+    abw: Math.max(0, abw).toFixed(2),
+    fgGravity: fgGravity,
+    fgPlato: gravityToPlato(fgGravity)
+  };
+}
+
+function updateABVPlaceholders() {
+  const ogType = document.getElementById('ogType').value;
+  const fgType = document.getElementById('fgType').value;
+  
+  // Update OG placeholder
+  const ogInput = document.getElementById('ogValue');
+  ogInput.placeholder = ogType === 'gravity' ? '1.050' : '12.5';
+  
+  // Update FG placeholder
+  const fgInput = document.getElementById('fgValue');
+  fgInput.placeholder = fgType === 'gravity' ? '1.010' : '2.5';
+}
+
+function updateABVCalculator() {
+  const ogType = document.getElementById('ogType').value;
+  const ogValue = parseFloat(document.getElementById('ogValue').value);
+  const fgMethod = document.getElementById('fgMethod').value;
+  const fgType = document.getElementById('fgType').value; 
+  const fgValue = parseFloat(document.getElementById('fgValue').value);
+  const correctionFactor = parseFloat(document.getElementById('correctionFactor').value) || 1.04;
+  
+  if (isNaN(ogValue) || isNaN(fgValue) || ogValue <= 0 || fgValue <= 0) {
+    // Clear all results
+    document.getElementById('densityGravityResult').textContent = '—';
+    document.getElementById('densityPlatoResult').textContent = '—';
+    document.getElementById('abvResult').textContent = '—';
+    document.getElementById('abwResult').textContent = '—';
+    return;
+  }
+  
+  // Convert OG to gravity format
+  let ogGravity = ogType === 'plato' ? platoToGravity(ogValue) : ogValue;
+  let ogPlato = ogType === 'gravity' ? gravityToPlato(ogValue) : ogValue;
+  
+  // Handle FG based on measurement method
+  let fgGravity;
+  
+  if (fgMethod === 'refractometer') {
+    // Apply refractometer correction
+    let fgRefractometerGravity = fgType === 'plato' ? platoToGravity(fgValue) : fgValue;
+    fgGravity = correctRefractometerReading(ogGravity, fgRefractometerGravity);
+  } else {
+    // Direct hydrometer reading
+    fgGravity = fgType === 'plato' ? platoToGravity(fgValue) : fgValue;
+  }
+  
+  // Calculate ABV, ABW and get FG conversions
+  const results = calculateABV(ogGravity, fgGravity, correctionFactor);
+  
+  // Display results - only final gravity (FG) conversions (corrected values)
+  document.getElementById('densityGravityResult').textContent = results.fgGravity.toFixed(3);
+  document.getElementById('densityPlatoResult').textContent = results.fgPlato.toFixed(4);
+  document.getElementById('abvResult').textContent = results.abv + '%';
+  document.getElementById('abwResult').textContent = results.abw + '%';
+}
+
+/* ===================== COLOR CONVERSION FUNCTIONS ===================== */
+
+// Color conversion functions
+function srmToEbc(srm) {
+  return srm * 1.97;
+}
+
+function ebcToSrm(ebc) {
+  return ebc / 1.97;
+}
+
+function lovibondToSrm(lovibond) {
+  return (lovibond * 1.35) - 0.6;
+}
+
+function srmToLovibond(srm) {
+  return (srm + 0.6) / 1.35;
+}
+
+// Convert SRM to RGB color approximation
+function srmToRgb(srm) {
+  // Clamp SRM values to reasonable range
+  srm = Math.max(0, Math.min(srm, 40));
+  
+  // SRM to RGB mapping from brewing wiki (accurate colors)
+  const colorMap = [
+    { srm: 1, r: 0xF3, g: 0xF9, b: 0x93 },   // #F3F993
+    { srm: 2, r: 0xF5, g: 0xF7, b: 0x5C },   // #F5F75C
+    { srm: 3, r: 0xF6, g: 0xF5, b: 0x13 },   // #F6F513
+    { srm: 4, r: 0xEA, g: 0xE6, b: 0x15 },   // #EAE615
+    { srm: 5, r: 0xE0, g: 0xD0, b: 0x1B },   // #E0D01B
+    { srm: 6, r: 0xD5, g: 0xBC, b: 0x26 },   // #D5BC26
+    { srm: 7, r: 0xCD, g: 0xAA, b: 0x37 },   // #CDAA37
+    { srm: 8, r: 0xC1, g: 0x96, b: 0x3C },   // #C1963C
+    { srm: 9, r: 0xBE, g: 0x8C, b: 0x3A },   // #BE8C3A
+    { srm: 10, r: 0xBE, g: 0x82, b: 0x3A },  // #BE823A
+    { srm: 11, r: 0xC1, g: 0x7A, b: 0x37 },  // #C17A37
+    { srm: 12, r: 0xBF, g: 0x71, b: 0x38 },  // #BF7138
+    { srm: 13, r: 0xBC, g: 0x67, b: 0x33 },  // #BC6733
+    { srm: 14, r: 0xB2, g: 0x60, b: 0x33 },  // #B26033
+    { srm: 15, r: 0xA8, g: 0x58, b: 0x39 },  // #A85839
+    { srm: 16, r: 0x98, g: 0x53, b: 0x36 },  // #985336
+    { srm: 17, r: 0x8D, g: 0x4C, b: 0x32 },  // #8D4C32
+    { srm: 18, r: 0x7C, g: 0x45, b: 0x2D },  // #7C452D
+    { srm: 19, r: 0x6B, g: 0x3A, b: 0x1E },  // #6B3A1E
+    { srm: 20, r: 0x5D, g: 0x34, b: 0x1A },  // #5D341A
+    { srm: 21, r: 0x4E, g: 0x2A, b: 0x0C },  // #4E2A0C
+    { srm: 22, r: 0x4A, g: 0x27, b: 0x27 },  // #4A2727
+    { srm: 23, r: 0x36, g: 0x1F, b: 0x1B },  // #361F1B
+    { srm: 24, r: 0x26, g: 0x17, b: 0x16 },  // #261716
+    { srm: 25, r: 0x23, g: 0x17, b: 0x16 },  // #231716
+    { srm: 26, r: 0x19, g: 0x10, b: 0x0F },  // #19100F
+    { srm: 27, r: 0x16, g: 0x10, b: 0x0F },  // #16100F
+    { srm: 28, r: 0x12, g: 0x0D, b: 0x0C },  // #120D0C
+    { srm: 29, r: 0x10, g: 0x0B, b: 0x0A },  // #100B0A
+    { srm: 30, r: 0x05, g: 0x0B, b: 0x0A },  // #050B0A
+    { srm: 31, r: 0x04, g: 0x0A, b: 0x09 },  // Interpolated
+    { srm: 32, r: 0x04, g: 0x09, b: 0x08 },  // Interpolated
+    { srm: 33, r: 0x03, g: 0x08, b: 0x07 },  // Interpolated
+    { srm: 34, r: 0x03, g: 0x07, b: 0x06 },  // Interpolated
+    { srm: 35, r: 0x02, g: 0x06, b: 0x05 },  // Interpolated
+    { srm: 36, r: 0x02, g: 0x05, b: 0x04 },  // Interpolated
+    { srm: 37, r: 0x01, g: 0x04, b: 0x03 },  // Interpolated
+    { srm: 38, r: 0x01, g: 0x03, b: 0x02 },  // Interpolated
+    { srm: 39, r: 0x01, g: 0x02, b: 0x01 },  // Interpolated
+    { srm: 40, r: 0x00, g: 0x00, b: 0x00 }   // #000000 - Black
+  ];
+  
+  // Find the two closest SRM values in the color map
+  let lower = colorMap[0];
+  let upper = colorMap[colorMap.length - 1];
+  
+  for (let i = 0; i < colorMap.length - 1; i++) {
+    if (srm >= colorMap[i].srm && srm <= colorMap[i + 1].srm) {
+      lower = colorMap[i];
+      upper = colorMap[i + 1];
+      break;
+    }
+  }
+  
+  // Interpolate between the two colors
+  const ratio = (srm - lower.srm) / (upper.srm - lower.srm);
+  const r = Math.round(lower.r + ratio * (upper.r - lower.r));
+  const g = Math.round(lower.g + ratio * (upper.g - lower.g));
+  const b = Math.round(lower.b + ratio * (upper.b - lower.b));
+  
+  return { r, g, b };
+}
+
+function updateColorConverter() {
+  const inputType = document.getElementById('colorInputType').value;
+  const inputValue = parseFloat(document.getElementById('colorInputValue').value);
+  
+  if (isNaN(inputValue) || inputValue < 0) {
+    // Clear all results
+    document.getElementById('lovibondResult').textContent = '—';
+    document.getElementById('srmResult').textContent = '—';
+    document.getElementById('ebcResult').textContent = '—';
+    document.getElementById('lovibondColorBox').style.backgroundColor = '#0f1530';
+    document.getElementById('srmColorBox').style.backgroundColor = '#0f1530';
+    document.getElementById('ebcColorBox').style.backgroundColor = '#0f1530';
+    return;
+  }
+  
+  let srmValue, lovibondValue, ebcValue;
+  
+  // Convert input to SRM first (base conversion)
+  switch (inputType) {
+    case 'srm':
+      srmValue = inputValue;
+      break;
+    case 'lovibond':
+      srmValue = lovibondToSrm(inputValue);
+      break;
+    case 'ebc':
+      srmValue = ebcToSrm(inputValue);
+      break;
+  }
+  
+  // Convert SRM to other scales
+  lovibondValue = srmToLovibond(srmValue);
+  ebcValue = srmToEbc(srmValue);
+  
+  // Display results
+  document.getElementById('lovibondResult').textContent = lovibondValue.toFixed(2);
+  document.getElementById('srmResult').textContent = srmValue.toFixed(2);
+  document.getElementById('ebcResult').textContent = ebcValue.toFixed(2);
+  
+  // Update color displays
+  const rgb = srmToRgb(srmValue);
+  const colorString = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+  
+  // All color boxes show the same color since they all represent the same beer
+  document.getElementById('lovibondColorBox').style.backgroundColor = colorString;
+  document.getElementById('srmColorBox').style.backgroundColor = colorString;
+  document.getElementById('ebcColorBox').style.backgroundColor = colorString;
+  
+  // Update beer glass color
+  const transparencySliderValue = parseInt(document.getElementById('beerTransparency').value);
+  const actualOpacity = 0.8 + (transparencySliderValue / 100) * 0.2; // Map 0-100% to 0.8-1.0
+  updateBeerGlass(rgb, actualOpacity);
+  
+  // Update ruler indicator position
+  updateColorRulerIndicator(srmValue);
+}
+
+function initializeColorRuler() {
+  const ruler = document.getElementById('colorRuler');
+  const gradientStops = [];
+  
+  // Create gradient stops for each SRM value
+  for (let srm = 1; srm <= 40; srm++) {
+    const rgb = srmToRgb(srm);
+    const percentage = ((srm - 1) / 39) * 100; // 0% at SRM 1, 100% at SRM 40
+    gradientStops.push(`rgb(${rgb.r}, ${rgb.g}, ${rgb.b}) ${percentage}%`);
+  }
+  
+  ruler.style.background = `linear-gradient(to right, ${gradientStops.join(', ')})`;
+}
+
+function updateColorRulerIndicator(srmValue) {
+  const indicator = document.getElementById('colorRulerIndicator');
+  
+  if (isNaN(srmValue) || srmValue < 1) {
+    indicator.style.opacity = '0';
+    return;
+  }
+  
+  // Calculate position as percentage (0% at SRM 1, 100% at SRM 40)
+  const percentage = Math.min(100, Math.max(0, ((srmValue - 1) / 39) * 100));
+  
+  indicator.style.left = `${percentage}%`;
+  indicator.style.opacity = '1';
+}
+
+function updateBeerGlass(rgb, opacity) {
+  const beerLiquid = document.getElementById('beerLiquid');
+  if (!beerLiquid) return;
+  
+  const colorString = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+  beerLiquid.style.fill = colorString;
+  beerLiquid.style.opacity = opacity;
+}
+
+function updateTransparencyDisplay() {
+  const transparencySlider = document.getElementById('beerTransparency');
+  const transparencyValue = document.getElementById('transparencyValue');
+  const sliderValue = parseInt(transparencySlider.value);
+  transparencyValue.textContent = `${sliderValue}%`;
+  
+  // Update beer glass if we have a color selected
+  const colorInputValue = document.getElementById('colorInputValue').value;
+  if (colorInputValue && !isNaN(parseFloat(colorInputValue))) {
+    updateColorConverter();
+  }
+}
+
+// Event listeners para ABV calculator
+document.getElementById('ogType').addEventListener('change', function() {
+  updateABVPlaceholders();
+  updateABVCalculator();
+  // Limpar input quando trocar o tipo
+  document.getElementById('ogValue').value = '';
+});
+
+document.getElementById('ogValue').addEventListener('input', function(e) {
+  const ogType = document.getElementById('ogType').value;
+  const masked = applyInputMask(ogType, e.target.value);
+  e.target.value = masked;
+  updateABVCalculator();
+});
+
+document.getElementById('fgMethod').addEventListener('change', function() {
+  updateABVCalculator();
+});
+
+document.getElementById('fgType').addEventListener('change', function() {
+  updateABVPlaceholders();
+  updateABVCalculator();
+  // Limpar input quando trocar o tipo
+  document.getElementById('fgValue').value = '';
+});
+
+document.getElementById('fgValue').addEventListener('input', function(e) {
+  const fgType = document.getElementById('fgType').value;
+  const masked = applyInputMask(fgType, e.target.value);
+  e.target.value = masked;
+  updateABVCalculator();
+});
+
+document.getElementById('correctionFactor').addEventListener('input', function(e) {
+  // Aplicar máscara para o fator de correção (X.XX)
+  let cleaned = e.target.value.replace(/[^0-9.]/g, '');
+  const parts = cleaned.split('.');
+  if (parts.length > 2) {
+    cleaned = parts[0] + '.' + parts.slice(1).join('');
+  }
+  if (parts[0].length > 1) {
+    cleaned = cleaned.substring(0, 1) + (parts[1] ? '.' + parts[1].substring(0, 2) : '');
+  } else if (parts[1] && parts[1].length > 2) {
+    cleaned = parts[0] + '.' + parts[1].substring(0, 2);
+  }
+  e.target.value = cleaned;
+  updateABVCalculator();
+});
+
+// Event listeners para Color Converter
+document.getElementById('colorInputType').addEventListener('change', function() {
+  updateColorConverter();
+});
+
+document.getElementById('colorInputValue').addEventListener('input', function(e) {
+  // Allow only numbers and decimal point
+  let cleaned = e.target.value.replace(/[^0-9.]/g, '');
+  const parts = cleaned.split('.');
+  if (parts.length > 2) {
+    cleaned = parts[0] + '.' + parts.slice(1).join('');
+  }
+  if (parts[1] && parts[1].length > 2) {
+    cleaned = parts[0] + '.' + parts[1].substring(0, 2);
+  }
+  e.target.value = cleaned;
+  updateColorConverter();
+});
+
+document.getElementById('beerTransparency').addEventListener('input', function() {
+  updateTransparencyDisplay();
+});
+
 // Menu switching
 document.querySelectorAll('.menu-btn').forEach(btn => {
   btn.addEventListener('click', () => switchTool(btn.dataset.tool));
@@ -1886,6 +2632,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Configura ferramenta inicial (hop)
   switchTool('hop');
+  // Initialize color ruler
+  initializeColorRuler();
+  
+  // Inicializa placeholders da calculadora ABV
+  updateABVPlaceholders();
 
   /* pré-seleções simpáticas para hops */
   const defaultLeft = byName.has('Cascade') ? 'Cascade' : DATA[0].nome;
