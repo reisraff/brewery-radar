@@ -1,51 +1,128 @@
-# HopRadar
+🍺 Brewery Radar
 
-HopRadar is a lightweight single-page web app for exploring and comparing hop characteristics.  
-It visualizes aroma and flavor attributes of hops (tea-like, citrus, herbal, fruity, etc.) on a **radar (spider) chart**, making it easy to compare two hops side by side.
+Brewery Radar is an interactive web application designed for brewers and beer enthusiasts to visualize, compare, and calculate brewing parameters. It provides powerful tools for exploring hop and yeast profiles, density conversions, ABV calculations, beer color conversions, and pitching rate estimations—all in one modern and responsive interface.
 
-## ✨ Features
+✨ Features
+🌿 Hop Radar
 
-- Interactive **radar chart** using [Chart.js](https://www.chartjs.org/).
-- Select one hop for the **left side (blue)** and optionally another for the **right side (magenta)**.
-- Built-in **dataset of international hops** (US, Germany, UK, Czech Republic, NZ, Australia, France, Spain, Argentina/Chile).
-- Quick **search/filter** by name, country, or beer style.
-- Clear **style and country metadata** shown for each selected hop.
-- Entirely self-contained: **HTML, CSS, and JS in one file**.
+Compare two hops side by side (blue vs. magenta).
 
-## 📊 Dataset
+Radar chart for aroma characteristics (Tea, Citrus, Herbal, Floral, Fruity, etc.).
 
-The app ships with a curated CSV dataset of hops, including:
-- **Origin country**
-- **14 aroma attributes** (scored 0–10):
-  - Tea, Citrus, Green, Caramel, Woody, Spicy, Menthol, Herbal, Vegetal, Floral, Green Fruit, Red Fruit, Yellow Fruit, Sweet Fruit
-- **Recommended beer styles**
+Chemical composition charts for:
 
-## 🚀 Getting Started
+Alpha acids
 
-1. Clone or download this repository.
-2. Open `lupulos.html` in your browser.
-3. Use the left and right selectors (or the search bar) to choose hops and compare their profiles.
+Beta acids
 
-No build steps or dependencies are required — everything runs locally.
+Total essential oils
 
-## 📷 Screenshot
+Aromatic compounds comparison (Myrcene, Humulene, Caryophyllene, Farnesene, Linalool, Geraniol, Polyphenols).
 
-*(Add a screenshot of the radar chart here once available)*
+Quick filter by name, country, or style.
 
-## 🛠 Tech
+🍞 Yeast Radar
 
-- **HTML5**  
-- **CSS3** (responsive grid + dark theme)  
-- **JavaScript**  
-- **Chart.js** for radar visualization  
+Compare two yeast strains simultaneously.
 
-## 🔮 Roadmap Ideas
+Fermentation profile radar chart (Fruity, Floral, Spicy, Phenolic, Ester, Clean, Complex, etc.).
 
-- Export comparison results as PNG or PDF.  
-- Add user’s own hops via CSV upload.  
-- Show aggregated flavor categories (e.g., “fruity” as sum of fruit attributes).  
-- Style recommendations based on selected hops.  
+Specification chart for ABV tolerance and temperature range.
 
-## 📄 License
+Quick filter by name, country, or type.
 
-MIT License — free to use, modify, and share.
+⚖️ Density Converter
+
+Convert between Plato/Brix and Specific Gravity (SG) instantly.
+
+🍷 ABV Calculator
+
+Supports hydrometer and refractometer methods.
+
+Calculates:
+
+ABV (Alcohol by Volume)
+
+ABW (Alcohol by Weight)
+
+Apparent attenuation
+
+Real attenuation
+
+Calories per 100ml
+
+Carbohydrates per 100ml
+
+Correction factor input supported.
+
+🎨 Beer Color Converter
+
+Convert between Lovibond, SRM, and EBC color scales.
+
+Adjustable beer transparency (turbidity).
+
+Visual beer glass rendering with realistic foam and color tones.
+
+Color ruler for quick reference.
+
+🧪 Pitch Rate Calculator
+
+Calculate recommended yeast cells and packs required.
+
+Input parameters:
+
+Density type (Plato / Gravity)
+
+Original Gravity (OG)
+
+Volume (liters)
+
+Pitching rate (Ale or Lager, standard or high).
+
+🛠️ Technologies
+
+HTML5 / CSS3 / JavaScript
+
+Chart.js for visualizations
+
+Responsive design (mobile, tablet, desktop)
+
+Multilingual support: Portuguese (PT), English (EN), Spanish (ES)
+
+Custom brewing calculators and converters
+
+🚀 Getting Started
+Clone the repository
+git clone https://github.com/your-username/brewery-radar.git
+cd brewery-radar
+
+Run locally
+
+Simply open index.html in your browser. No build step required.
+
+Deploy
+
+You can host it on:
+
+GitHub Pages
+
+Netlify
+
+Vercel
+
+Any static web server
+
+🌍 Internationalization
+
+Switch between PT / EN / ES via the top-right language selector.
+
+Easily extend translations by editing the TRANSLATIONS object inside the script.
+
+📧 Feedback
+
+⚠️ If any item is missing from the hop or yeast lists, or if you notice incorrect data, please send an email to reisraff@gmail.com
+.
+
+📜 License
+
+MIT License. Free to use and modify.
