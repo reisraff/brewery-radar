@@ -12,7 +12,7 @@
 </script>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Radar de Cervejaria – Visualização & Comparação</title>
+<title>Brewery Radar</title>
 <!-- Chart.js via CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <style>
@@ -26,32 +26,85 @@
     --ring:#2a335a;
   }
   *{box-sizing:border-box}
+  html{overflow-x:hidden}
   body{
     margin:0; padding:24px;
     font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
     color:var(--text); background: radial-gradient(1200px 700px at 20% -10%, #1c2550 0%, var(--bg) 35%), var(--bg);
+    -webkit-text-size-adjust: 100%;
   }
-  h1{font-size:clamp(20px,3vw,28px); margin:0 0 8px 0; letter-spacing:.2px}
+  h1{font-size:clamp(18px,4vw,28px); margin:0 0 8px 0; letter-spacing:.2px}
   .sub{color:var(--muted); margin-bottom:22px}
   .container{
     display:grid; gap:18px;
     grid-template-columns: 460px 1fr 460px;
   }
   #color-tool .container{
-    grid-template-columns: 644px 1fr 644px;
+    grid-template-columns: minmax(300px, 644px) 1fr minmax(300px, 644px);
   }
   @media (max-width: 1200px){
     .container{grid-template-columns: 400px 1fr 400px; gap:12px}
-    #color-tool .container{grid-template-columns: 560px 1fr 560px; gap:12px}
+    #color-tool .container{grid-template-columns: minmax(280px, 560px) 1fr minmax(280px, 560px); gap:12px}
   }
   @media (max-width: 980px){
     .container{
       grid-template-columns: 1fr;
       grid-template-rows: auto auto auto;
     }
+    #color-tool .container{
+      grid-template-columns: 1fr;
+    }
     .left-panel { order: 1; }
     .chart-panel { order: 3; }
     .right-panel { order: 2; }
+  }
+  @media (max-width: 768px){
+    body{padding:16px}
+    .container{gap:12px}
+    .panel{padding:12px}
+    .row{flex-direction:column; gap:8px}
+    .grid-2{grid-template-columns:1fr; gap:8px}
+    .header{flex-direction:column; align-items:flex-start; gap:8px}
+    .legend{justify-content:flex-start}
+    .main-menu, .tabs{flex-wrap:wrap}
+    .menu-btn{padding:10px 16px; font-size:14px}
+    .tab-btn{padding:6px 12px; font-size:13px}
+    .converter-main-content{display:block}
+    .beer-glass-container{min-height:100px; padding:8px; margin:16px 0}
+    .beer-glass{width:80px; height:96px}
+    .color-samples{grid-template-columns:repeat(3, 1fr); gap:8px}
+  }
+  @media (max-width: 480px){
+    body{padding:12px}
+    h1{font-size:22px}
+    .panel{padding:10px; border-radius:12px}
+    .panel h2{font-size:15px}
+    select, input[type="text"]{padding:8px 10px; font-size:13px}
+    .pill{padding:6px 8px; font-size:11px}
+    .tag{padding:4px 6px; font-size:11px}
+    .menu-btn{padding:8px 12px; font-size:13px}
+    .tab-btn{padding:5px 10px; font-size:12px}
+    .lang-btn{padding:4px 6px; font-size:10px}
+    .meta .item{padding:8px 10px}
+    .result-item{padding:10px}
+    .pitch-info{padding:16px}
+    .converter-main-content{display:block}
+    .beer-glass-container{min-height:80px; padding:6px; margin:12px 0}
+    .beer-glass{width:60px; height:72px}
+    .color-samples{grid-template-columns:repeat(3, 1fr); gap:6px}
+    .color-box{height:36px}
+  }
+  @media (max-width: 360px){
+    body{padding:8px}
+    .panel{padding:8px; border-radius:10px}
+    .menu-btn{padding:6px 10px; font-size:12px; min-height:44px}
+    .tab-btn{padding:4px 8px; font-size:11px; min-height:40px}
+    select, input[type="text"]{padding:6px 8px; font-size:12px; min-height:44px}
+    .styles{gap:4px}
+    .lang-selector{margin-bottom:8px}
+    .beer-glass-container{min-height:60px; padding:4px}
+    .beer-glass{width:50px; height:60px}
+    .color-box{height:32px}
   }
   .panel{
     background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
@@ -60,7 +113,7 @@
     padding:16px;
     box-shadow: 0 10px 30px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.05);
   }
-  .panel h2{margin:2px 0 12px 0; font-size:16px; color:#ced7ff; font-weight:700}
+  .panel h2{margin:2px 0 12px 0; font-size:clamp(14px,2.5vw,16px); color:#ced7ff; font-weight:700}
   .row{display:flex; gap:10px; margin-bottom:10px}
   label{font-size:12px; color:var(--muted); display:block; margin-bottom:6px}
   select, input[type="text"]{
@@ -69,6 +122,7 @@
     border:1px solid #27305a; border-radius:10px;
     padding:10px 12px; outline:none;
     font-size:14px; transition:border .2s, box-shadow .2s;
+    min-height:44px;
   }
   select:focus, input[type="text"]:focus{
     border-color:#5a6ee5; box-shadow:0 0 0 3px rgba(90,110,229,.25)
@@ -120,6 +174,7 @@
     padding:8px 16px; border-radius:6px; cursor:pointer;
     font-size:14px; font-weight:600;
     transition:all .2s;
+    min-height:44px; display:flex; align-items:center;
   }
   .tab-btn:hover{background:rgba(255,255,255,.08); color:var(--text)}
   .tab-btn.active{background:var(--brand-left); color:#fff}
@@ -131,11 +186,18 @@
     border-radius:8px; padding:4px;
     display:flex; gap:2px;
   }
+  @media (max-width: 768px){
+    .lang-selector{
+      position:relative; top:0; right:0;
+      margin:0 0 16px 0; align-self:flex-end;
+    }
+  }
   .lang-btn{
     background:transparent; border:none; color:var(--muted);
     padding:6px 8px; border-radius:6px; cursor:pointer;
     font-size:11px; font-weight:600; text-transform:uppercase;
     transition:all .2s;
+    min-height:36px; display:flex; align-items:center;
   }
   .lang-btn:hover{background:rgba(255,255,255,.08); color:var(--text)}
   .lang-btn.active{background:var(--brand-left); color:#fff}
@@ -154,6 +216,7 @@
     padding:12px 24px; border-radius:6px; cursor:pointer;
     font-size:16px; font-weight:700;
     transition:all .2s;
+    min-height:44px; display:flex; align-items:center;
   }
   .menu-btn:hover{background:rgba(255,255,255,.08); color:var(--text)}
   .menu-btn.active{background:var(--brand-left); color:#fff}
@@ -241,7 +304,7 @@
     <button class="lang-btn" data-lang="es">ES</button>
   </div>
   
-  <h1 data-i18n="main_title">Brewery Radar – Visualization & Comparison</h1>
+  <h1 data-i18n="main_title">Brewery Radar</h1>
   
   <!-- Menu principal -->
   <div class="main-menu">
@@ -596,8 +659,10 @@
               <div class="row">
                 <div>
                   <label for="beerTransparency" data-i18n="beer_transparency_label">Transparência da cerveja:</label>
-                  <input type="range" id="beerTransparency" min="0" max="100" step="5" value="80" />
-                  <span id="transparencyValue">80%</span>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <input type="range" id="beerTransparency" min="0" max="100" step="5" value="80" />
+                    <span id="transparencyValue" style="min-width: 35px;">80%</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -863,7 +928,7 @@
 /* =====================  INTERNACIONALIZAÇÃO  ===================== */
 const TRANSLATIONS = {
   pt: {
-    main_title: "Radar de Cervejaria – Visualização & Comparação",
+    main_title: "Radar de Cervejaria",
     menu_hop_radar: "Radar de Lúpulos",
     menu_yeast_radar: "Radar de Leveduras",
     menu_converter: "Conversor de Densidade",
@@ -998,7 +1063,7 @@ const TRANSLATIONS = {
     or_text: "ou"
   },
   en: {
-    main_title: "Brewery Radar – Visualization & Comparison",
+    main_title: "Brewery Radar",
     menu_hop_radar: "Hop Radar",
     menu_yeast_radar: "Yeast Radar",
     menu_converter: "Density Converter",
@@ -1135,7 +1200,7 @@ const TRANSLATIONS = {
     or_text: "or"
   },
   es: {
-    main_title: "Radar de Cervecería – Visualización y Comparación",
+    main_title: "Radar de Cervecería",
     menu_hop_radar: "Radar de Lúpulos",
     menu_yeast_radar: "Radar de Levaduras",
     menu_converter: "Convertidor de Densidad",
