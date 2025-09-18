@@ -2418,6 +2418,8 @@ function switchTool(toolName) {
     section.classList.toggle('active', section.id === `${toolName}-tool`);
   });
   
+  // Atualizar URL hash
+  window.history.replaceState(null, null, `#${toolName}`);
   
   // Reset tabs to first tab when switching tools
   if (toolName === 'hop') {
@@ -3169,6 +3171,15 @@ document.querySelectorAll('.lang-btn').forEach(btn => {
   btn.addEventListener('click', () => switchLanguage(btn.dataset.lang));
 });
 
+// Hash change listener for browser navigation
+window.addEventListener('hashchange', function() {
+  const hashTool = window.location.hash.slice(1);
+  const validTools = ['hop', 'yeast', 'converter', 'abv', 'color', 'pitch'];
+  if (validTools.includes(hashTool) && hashTool !== currentTool) {
+    switchTool(hashTool);
+  }
+});
+
 /* inicialização */
 // Aguarda o DOM estar pronto
 document.addEventListener('DOMContentLoaded', function() {
@@ -3179,8 +3190,11 @@ document.addEventListener('DOMContentLoaded', function() {
   fillSelects(DATA);
   fillYeastSelects(YEAST_DATA);
 
-  // Configura ferramenta inicial (hop)
-  switchTool('hop');
+  // Configura ferramenta inicial baseada na URL hash ou padrão (hop)
+  const hashTool = window.location.hash.slice(1);
+  const validTools = ['hop', 'yeast', 'converter', 'abv', 'color', 'pitch'];
+  const initialTool = validTools.includes(hashTool) ? hashTool : 'hop';
+  switchTool(initialTool);
   // Initialize color ruler
   initializeColorRuler();
   
