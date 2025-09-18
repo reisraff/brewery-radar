@@ -14,16 +14,22 @@
   - Beta acids  
   - Total essential oils  
 - Aromatic compounds comparison (Myrcene, Humulene, Caryophyllene, Farnesene, Linalool, Geraniol, Polyphenols).  
-- Quick filter by **name, country, or style**.  
+- Quick filter by **name, country, or style**.
+
+![Hop Radar](web-hop-radar.png)  
 
 ### 🍞 Yeast Radar  
 - Compare **two yeast strains** simultaneously.  
 - Fermentation profile radar chart (Fruity, Floral, Spicy, Phenolic, Ester, Clean, Complex, etc.).  
 - Specification chart for **ABV tolerance and temperature range**.  
-- Quick filter by **name, country, or type**.  
+- Quick filter by **name, country, or type**.
+
+![Yeast Radar](web-yest-radar.png)  
 
 ### ⚖️ Density Converter  
-- Convert between **Plato/Brix** and **Specific Gravity (SG)** instantly.  
+- Convert between **Plato/Brix** and **Specific Gravity (SG)** instantly.
+
+![Density Converter](web-density-conversor.png)  
 
 ### 🍷 ABV Calculator  
 - Supports **hydrometer** and **refractometer** methods.  
@@ -34,13 +40,17 @@
   - Real attenuation  
   - Calories per 100ml  
   - Carbohydrates per 100ml  
-- Correction factor input supported.  
+- Correction factor input supported.
+
+![ABV Calculator](web-abc-calculator.png)  
 
 ### 🎨 Beer Color Converter  
 - Convert between **Lovibond**, **SRM**, and **EBC** color scales.  
 - Adjustable **beer transparency (turbidity)**.  
 - Visual **beer glass rendering** with realistic foam and color tones.  
-- Color ruler for quick reference.  
+- Color ruler for quick reference.
+
+![Beer Color Converter](web-color-conversor.png)  
 
 ### 🧪 Pitch Rate Calculator  
 - Calculate recommended **yeast cells** and **packs** required.  
@@ -48,7 +58,9 @@
   - Density type (Plato / Gravity)  
   - Original Gravity (OG)  
   - Volume (liters)  
-  - Pitching rate (Ale or Lager, standard or high).  
+  - Pitching rate (Ale or Lager, standard or high).
+
+![Pitch Rate Calculator](web-pitch-rate-calculator.png)  
 
 ---
 
